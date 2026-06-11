@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>License Declaration - Wikibase Cloud Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.css">
+
+  <style>
+    /* ---------- Page shell ---------- */
+    html, body, #app { height: 100%; margin: 0; overflow: hidden; }
+    body { font-family: Roboto, sans-serif; }
+
+    .v-application { height: 100vh !important; }
+    .v-application--wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .prototype-banner {
+      flex: 0 0 28px;
+      height: 28px;
+      background: #37474f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      font-family: 'Jost', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .lane-banner {
+      flex: 0 0 32px;
+      height: 32px;
+      background: #37474f;
+      color: #fff;
+      display: flex;
+      font-family: 'Jost', sans-serif;
+    }
+    .lane-banner > div {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .panes {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .pane {
+      flex: 1;
+      overflow-y: auto;
+      height: 100%;
+    }
+    .pane.left { background: #f5f5f5; }
+    .pane.right { background: #37474f; }
+    /* zoom is applied to the inner content, not the pane itself, so the
+       50/50 split stays exact and the lane-banner divider lines up with
+       the pane boundary. */
+    .pane > .pane-content { zoom: 0.82; }
+    .pane.right > .pane-content { padding: 16px 20px; }
+
+    /* ---------- Left pane: WBC chrome ---------- */
+    .wbc-header {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+    }
+    .wbc-header img.wbc-logo {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+
+    .wbc-tabs {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      padding: 0 20px;
+    }
+    .wbc-tab {
+      padding: 14px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: #757575;
+      cursor: pointer;
+      position: relative;
+      text-transform: uppercase;
+    }
+    .wbc-tab.active {
+      color: #1976d2;
+    }
+    .wbc-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #1976d2;
+    }
+
+    .profile-content {
+      padding: 16px 20px 24px 20px;
+      max-width: 720px;
+    }
+
+    /* Manager-profile card style */
+    .profile-card { margin-bottom: 16px; }
+    .profile-card .v-card__title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      padding-bottom: 8px;
+    }
+    .profile-card .v-card__subtitle {
+      padding-top: 0;
+      padding-bottom: 14px;
+      font-size: 0.85rem;
+    }
+
+    .required-mark { color: #c00; font-weight: 700; margin-left: 2px; }
+
+    .inline-error {
+      color: #c00;
+      font-size: 0.875rem;
+      margin-top: 4px;
+      margin-left: 32px;
+      line-height: 1.4;
+    }
+    .inline-error a {
+      color: #1565c0;
+      text-decoration: none;
+    }
+    .inline-error a:hover { text-decoration: underline; }
+
+    .other-license-block {
+      margin-top: 8px;
+      margin-left: 32px;
+      padding: 12px 16px;
+      background: #fafafa;
+      border-left: 3px solid #1976d2;
+    }
+
+    .placeholder-text {
+      font-size: 13px;
+      color: #757575;
+      line-height: 1.5;
+    }
+    .placeholder-row { margin-bottom: 4px; }
+
+    .copyrights-helper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #fafafa;
+    }
+    .copyrights-helper-text {
+      flex: 1;
+      font-size: 13px;
+      color: #424242;
+      line-height: 1.5;
+    }
+    .copyrights-helper-btn { flex: 0 0 auto; }
+
+    /* ---------- Right pane: bare snippet blocks ---------- */
+    .snippet { margin-bottom: 18px; }
+    .snippet-label {
+      font-family: 'Jost', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      margin: 0 0 6px 2px;
+    }
+    .snippet-content {
+      background: #fff;
+      padding: 12px 14px;
+      border-radius: 2px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    /* Footer mockup */
+    .footer-mock {
+      font-family: sans-serif;
+      font-size: 13px;
+      color: #54595d;
+    }
+    .footer-mock .footer-lastedit { margin-bottom: 6px; }
+    .footer-mock .footer-license {
+      margin-bottom: 10px;
+      line-height: 1.7;
+    }
+    .footer-mock .footer-links { margin-bottom: 10px; }
+    .footer-mock .footer-links a {
+      color: #36c;
+      text-decoration: none;
+      margin-right: 14px;
+    }
+    .footer-mock .footer-badges {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .footer-mock .footer-badges img {
+      height: 32px;
+      width: auto;
+      display: block;
+    }
+    .footer-mock .license-link { color: #36c; text-decoration: none; }
+    .footer-mock .license-link:hover { text-decoration: underline; }
+    .footer-mock .unconfigured { color: #b00; font-style: italic; }
+
+    /* MediaWiki-style dialog mockups */
+    .wb-dialog {
+      font-family: sans-serif;
+      font-size: 13.5px;
+      color: #202122;
+    }
+    .wb-dialog h3 {
+      font-size: 18px;
+      font-weight: 400;
+      border-bottom: 1px solid #c8ccd1;
+      padding-bottom: 6px;
+      margin: 0 0 10px 0;
+      font-family: 'Linux Libertine', Georgia, serif;
+    }
+    .wb-dialog label {
+      display: block;
+      font-weight: 700;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-size: 13.5px;
+    }
+    .wb-dialog .required-star { color: #202122; margin-left: 2px; }
+    .wb-dialog input[type="text"], .wb-dialog textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px 8px;
+      border: 1px solid #a2a9b1;
+      border-radius: 2px;
+      font-size: 13px;
+      background: #fff;
+      color: #54595d;
+    }
+    .wb-dialog .copyright-line {
+      margin-top: 12px;
+      line-height: 1.7;
+    }
+    .wb-dialog .copyright-line a { color: #36c; text-decoration: none; }
+    .wb-dialog .copyright-line a:hover { text-decoration: underline; }
+    .wb-dialog .wb-button {
+      display: inline-block;
+      margin-top: 10px;
+      background: #36c;
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .save-dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #c8ccd1;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .save-dialog-header .title { font-weight: 700; font-size: 14.5px; }
+    .save-dialog-header .publish-button {
+      background: #36c;
+      color: #fff;
+      padding: 5px 11px;
+      border-radius: 2px;
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+    .save-dialog-header .close-x { font-size: 16px; color: #54595d; padding: 0 6px; }
+
+    /* Code blocks */
+    pre.code-block {
+      background: #263238;
+      color: #eceff1;
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .code-key   { color: #82aaff; }
+    .code-str   { color: #c3e88d; }
+    .code-prop  { color: #ffcb6b; }
+    .code-uri   { color: #89ddff; }
+    .code-type  { color: #f78c6c; }
+    .code-comment { color: #607d8b; font-style: italic; }
+
+    /* Marker-style highlight for content that changes with manager's choices.
+       Looks like a yellow highlighter stroke. Works on light and dark backgrounds. */
+    .marker {
+      background: #fff176;
+      color: #1a1a1a;
+      padding: 0 3px;
+      border-radius: 2px;
+      font-weight: 500;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+    .marker a { color: #1565c0 !important; }
+    .marker.marker-italic { font-style: italic; }
+
+    /* Static marker: a different highlighter color for values that
+       stay the same regardless of the manager's choices. */
+    .marker-static {
+      background: #bbdefb;
+      color: #1a1a1a;
+      padding: 0 3px;
+      border-radius: 2px;
+      font-weight: 500;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+    .marker-static a { color: #1565c0 !important; }
+
+    .config-invalid {
+      background: #ffebee;
+      color: #c62828;
+      padding: 10px 12px;
+      border-left: 4px solid #c62828;
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    /* Why CC0 dialog */
+    .why-cc0 h4 { margin-top: 14px; margin-bottom: 4px; font-weight: 600; }
+    .why-cc0 p { margin-bottom: 8px; line-height: 1.5; }
+  </style>
+</head>
+
+<body>
+<div id="app">
+  <v-app>
+
+    <div class="prototype-banner">License declaration prototype</div>
+
+    <div class="lane-banner">
+      <div class="lane-banner-left">Manager configures licensing rules</div>
+      <div class="lane-banner-right">Manager's choices control wiki behavior</div>
+    </div>
+
+    <div class="panes">
+
+      <!-- ===================== LEFT PANE ===================== -->
+      <div class="pane left">
+       <div class="pane-content">
+
+        <!-- WBC site header -->
+        <div class="wbc-header">
+          <img class="wbc-logo" src="assets/wikibase-cloud-logo.png" alt="Wikibase Cloud">
+        </div>
+
+        <!-- Tabs -->
+        <div class="wbc-tabs">
+          <div class="wbc-tab active">Profile</div>
+          <div class="wbc-tab">Settings</div>
+          <div class="wbc-tab">Features</div>
+        </div>
+
+        <div class="profile-content">
+
+          <!-- Details (placeholder context) -->
+          <v-card outlined class="profile-card">
+            <v-card-title>Details</v-card-title>
+            <v-card-text>
+              <div class="placeholder-text">
+                <div class="placeholder-row"><strong>Status:</strong> Published</div>
+                <div class="placeholder-row"><strong>Site Name:</strong> anton12</div>
+                <div class="placeholder-row"><strong>Domain:</strong> anton12.wikibase.cloud</div>
+                <div class="placeholder-row"><strong>Date Created:</strong> 2025-09-30</div>
+                <div class="placeholder-row"><strong>Database Version:</strong> 1.43.0</div>
+              </div>
+            </v-card-text>
+          </v-card>
+
+          <!-- Licensing Requirements (the feature) -->
+          <v-card outlined class="profile-card">
+            <v-card-title>Licensing rules</v-card-title>
+            <v-card-subtitle class="grey--text text--darken-1">
+              These choices control the licensing statements shown in your wiki's footer, in add/edit dialogs, and in API and RDF responses.
+            </v-card-subtitle>
+
+            <v-card-text>
+              <!-- Q1: Structured data -->
+              <div class="mb-2">
+                I confirm that the <strong>structured data</strong> in this Wikibase will be dedicated to the public domain or released under CC0.<span class="required-mark">*</span>
+              </div>
+              <v-radio-group v-model="sdConfirmed" class="mt-0" hide-details dense>
+                <v-radio :value="true" label="Yes"></v-radio>
+                <v-radio :value="false" label="No"></v-radio>
+              </v-radio-group>
+
+              <div v-if="sdConfirmed === false" class="inline-error">
+                All structured data on Wikibase Cloud must be released under CC0 or dedicated to public domain.
+                <a href="https://www.mediawiki.org/wiki/Wikibase/Wikibase.cloud/Why_CC0" target="_blank" rel="noopener">Why CC0?</a>
+              </div>
+
+              <v-divider class="my-4"></v-divider>
+
+              <!-- Q2: Other namespaces -->
+              <div class="mb-2">
+                I confirm that the <strong>text in other namespaces</strong> of this Wikibase will be dedicated to the public domain or released under CC0.<span class="required-mark">*</span>
+              </div>
+              <v-radio-group v-model="onConfirmed" class="mt-0" hide-details dense>
+                <v-radio :value="true" label="Yes"></v-radio>
+                <v-radio :value="false" label="No"></v-radio>
+              </v-radio-group>
+
+              <div v-if="onConfirmed === false" class="other-license-block">
+                <div class="font-weight-medium mb-2">
+                  Select a license that applies to the <strong>text in other namespaces</strong>:<span class="required-mark">*</span>
+                </div>
+                <v-select
+                  v-model="onLicenseChoice"
+                  :items="licenseOptions"
+                  item-text="name"
+                  item-value="slug"
+                  outlined
+                  dense
+                  hide-details
+                  placeholder="Select a license"
+                ></v-select>
+
+                <template v-if="onLicenseChoice === 'other'">
+                  <div class="mt-3">
+                    <v-text-field
+                      v-model="onCustomName"
+                      outlined dense hide-details
+                      label="Name"
+                      placeholder="Open Database License (ODbL)"
+                    ></v-text-field>
+                  </div>
+                  <div class="mt-3">
+                    <v-text-field
+                      v-model="onCustomUrl"
+                      outlined dense hide-details
+                      label="URL"
+                      placeholder="http://opendatacommons.org/licenses/odbl/summary/"
+                    ></v-text-field>
+                  </div>
+                </template>
+              </div>
+            </v-card-text>
+
+            <v-divider></v-divider>
+            <v-card-actions class="px-4 py-2">
+              <v-btn text small @click="resetState">Reset</v-btn>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="primary"
+                depressed
+                :disabled="!canSave || !hasUnsavedChanges"
+                @click="fakeSaveClicked"
+              >Set Licensing</v-btn>
+            </v-card-actions>
+
+            <template v-if="canShowCopyrightsHelper">
+              <v-divider></v-divider>
+              <div class="copyrights-helper">
+                <div class="copyrights-helper-text">
+                  Please add the licensing rules to <a href="https://anton12.wikibase.cloud/wiki/Project:Copyrights" target="_blank" rel="noopener">Project:Copyrights</a> if you haven't already. You can quickly append a new licensing statement to the page by clicking this button.
+                </div>
+                <v-btn
+                  color="primary"
+                  outlined
+                  small
+                  class="copyrights-helper-btn"
+                  @click="updateCopyrightsClicked"
+                >Update Project:Copyrights</v-btn>
+              </div>
+            </template>
+          </v-card>
+
+          <!-- Intended use (placeholder context) -->
+          <v-card outlined class="profile-card">
+            <v-card-title>Intended use</v-card-title>
+            <v-card-text>
+              <div class="placeholder-text">
+                This information helps us understand how you intend to use this Wikibase. Update it when it changes. Visible to all users in the ecosystem.
+              </div>
+            </v-card-text>
+          </v-card>
+
+        </div>
+       </div>
+      </div>
+
+      <!-- ===================== RIGHT PANE ===================== -->
+      <div class="pane right">
+       <div class="pane-content">
+
+        <!-- 1) Footer -->
+        <div class="snippet">
+          <div class="snippet-label">Footer</div>
+          <div class="snippet-content">
+            <div v-if="!canSave" class="config-invalid">
+              Invalid configuration. The wiki profile cannot be saved in this state, so the footer does not update.
+            </div>
+            <div v-else class="footer-mock">
+              <div class="footer-lastedit">This page was last edited on 4 June 2025, at 12:28.</div>
+              <div class="footer-license" v-if="hasAnyLicensing">
+                <span class="marker">All structured data in the Item, Property, Lexeme and EntitySchema namespaces is available under the <a class="license-link" href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank">Creative Commons CC0 License</a>. Text in the other namespaces is available under the <template v-if="descON && urlON"><a class="license-link" :href="urlON" target="_blank">{{ descON }}</a>.</template><template v-else><span class="unconfigured">[not yet configured]</span>.</template></span>
+              </div>
+              <div class="footer-links">
+                <a href="#">Privacy policy</a>
+                <a href="#">About this wiki</a>
+                <a href="#">Disclaimers</a>
+                <a href="#">Report illegal content</a>
+                <a href="#">Mobile view</a>
+              </div>
+              <div class="footer-badges">
+                <img src="assets/powered-badges.png" alt="Powered by MediaWiki, Powered by Wikibase, Based on WBStack">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2) Structured data dialog -->
+        <div class="snippet">
+          <div class="snippet-label">Structured data dialog</div>
+          <div class="snippet-content">
+            <div v-if="!canSave" class="config-invalid">
+              Invalid configuration. The wiki profile cannot be saved in this state, so dialog messages do not update.
+            </div>
+            <div v-else class="wb-dialog">
+              <h3>Create a new Lexeme</h3>
+              <label>Lemma <span class="required-star">*</span></label>
+              <input type="text" placeholder="Base form of a word, e.g. 'cat'" disabled>
+              <label>Lexeme's language <span class="required-star">*</span></label>
+              <input type="text" placeholder="The Lexeme's language, e.g. 'English'" disabled>
+              <label>Lexical category <span class="required-star">*</span></label>
+              <input type="text" placeholder="The Lexeme's lexical category, e.g. 'noun'" disabled>
+
+              <div class="copyright-line">
+                <template v-if="sdConfirmed === true"><span class="marker">By clicking "Create Lexeme", you irrevocably agree to release your contribution under the <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank">Creative Commons CC0 License</a> and you confirm that you have the rights to do so.</span></template><template v-else>By clicking "Create Lexeme", you agree to the <a href="https://anton12.wikibase.cloud/wiki/Project:Copyrights" target="_blank">licensing rules</a>.</template>
+              </div>
+
+              <button class="wb-button" type="button" disabled>Create Lexeme</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3) Other namespaces dialog -->
+        <div class="snippet">
+          <div class="snippet-label">Other namespaces dialog</div>
+          <div class="snippet-content">
+            <div v-if="!canSave" class="config-invalid">
+              Invalid configuration. The wiki profile cannot be saved in this state, so dialog messages do not update.
+            </div>
+            <div v-else class="wb-dialog">
+              <div class="save-dialog-header">
+                <span class="close-x">&times;</span>
+                <span class="title">Save your changes</span>
+                <span class="publish-button">Publish page</span>
+              </div>
+              <label>Summary:</label>
+              <textarea rows="2" placeholder="Describe what you changed" disabled></textarea>
+
+              <div class="copyright-line">
+                <template v-if="onConfirmed === true"><span class="marker">By saving changes, you irrevocably agree to release your contribution under the <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank">Creative Commons CC0 License</a> and you confirm that you have the rights to do so.</span></template><template v-else-if="onConfirmed === false && descON && urlON"><span class="marker">By saving changes, you irrevocably agree to release your contribution under the <a :href="urlON" target="_blank">{{ descON }}</a> and you confirm that you have the rights to do so.</span></template><template v-else>By saving changes, you agree to the <a href="https://anton12.wikibase.cloud/wiki/Project:Copyrights" target="_blank">licensing rules</a>.</template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4) API -->
+        <div class="snippet">
+          <div class="snippet-label">API (meta=siteinfo&siprop=rightsinfo)</div>
+          <div class="snippet-content" style="padding:0;background:transparent;box-shadow:none;">
+            <div v-if="!canSave" class="config-invalid">
+              Invalid configuration. The wiki profile cannot be saved in this state, so API metadata does not update.
+            </div>
+            <pre v-else class="code-block"><span>{
+  </span><span class="code-key">"batchcomplete"</span><span>: </span><span class="code-str">""</span><span>,
+  </span><span class="code-key">"query"</span><span>: {
+    </span><span class="code-key">"rightsinfo"</span><span>: {
+      </span><span class="code-key">"url"</span><span>: </span><span class="marker-static">"https://anton12.wikibase.cloud/wiki/Project:Copyrights"</span><span>,
+      </span><span class="code-key">"text"</span><span>: </span><span class="marker">"{{ apiText }}"</span><span>
+    }
+  }
+}</span></pre>
+          </div>
+        </div>
+
+        <!-- 5) RDF -->
+        <div class="snippet">
+          <div class="snippet-label">RDF dump (Turtle)</div>
+          <div class="snippet-content" style="padding:0;background:transparent;box-shadow:none;">
+            <div v-if="!canSave" class="config-invalid">
+              Invalid configuration. The wiki profile cannot be saved in this state, so RDF dumps do not update.
+            </div>
+            <pre v-else class="code-block"><span class="code-prop">data</span><span>:Q1 a </span><span class="code-prop">schema</span><span>:Dataset ;
+    </span><span class="code-prop">schema</span><span>:about </span><span class="code-prop">wd</span><span>:Q1 ;
+</span><template v-if="sdConfirmed === true"><span class="marker">    cc:license &lt;http://creativecommons.org/publicdomain/zero/1.0/&gt; ;</span><span>
+</span></template><template v-else><span class="marker marker-italic">    # cc:license not set - structured data confirmation missing</span><span>
+</span></template><span>    </span><span class="code-prop">schema</span><span>:softwareVersion </span><span class="code-str">"1.0.0"</span><span> ;
+    </span><span class="code-prop">schema</span><span>:version </span><span class="code-str">"2469908226"</span><span>^^</span><span class="code-prop">xsd</span><span>:</span><span class="code-type">integer</span><span> ;
+    </span><span class="code-prop">schema</span><span>:dateModified </span><span class="code-str">"2026-03-06T17:17:25Z"</span><span>^^</span><span class="code-prop">xsd</span><span>:</span><span class="code-type">dateTime</span><span> ;
+    </span><span class="code-prop">wikibase</span><span>:statements </span><span class="code-str">"58"</span><span>^^</span><span class="code-prop">xsd</span><span>:</span><span class="code-type">integer</span><span> ;
+    </span><span class="code-prop">wikibase</span><span>:sitelinks </span><span class="code-str">"13"</span><span>^^</span><span class="code-prop">xsd</span><span>:</span><span class="code-type">integer</span><span> ;
+    </span><span class="code-prop">wikibase</span><span>:identifiers </span><span class="code-str">"11"</span><span>^^</span><span class="code-prop">xsd</span><span>:</span><span class="code-type">integer</span><span> .</span></pre>
+          </div>
+        </div>
+
+       </div>
+      </div>
+    </div>
+
+    <!-- Why CC0 dialog -->
+    <v-dialog v-model="whyCc0Open" max-width="640">
+      <v-card>
+        <v-card-title>Why CC0 for structured data?</v-card-title>
+        <v-card-text class="why-cc0">
+          <p>Wikibase Cloud requires that all structured data is published under CC0 or dedicated to the public domain. Here is the reasoning:</p>
+
+          <h4>1. CC licenses were designed for creative works, not data</h4>
+          <p>CC BY and CC BY-SA grant rights under copyright, but in many jurisdictions data is protected by sui generis database rights instead. CC licenses do not cover those rights cleanly.</p>
+
+          <h4>2. Attribution requirements become unworkable at scale</h4>
+          <p>If you combine 50 CC BY datasets, you may be obligated to attribute all 50 sources in every context where the combined dataset appears.</p>
+
+          <h4>3. The Share-Alike clause in CC BY-SA creates legal risk</h4>
+          <p>The boundaries of what counts as a "derivative" of a dataset are unclear. Querying or combining datasets may or may not trigger Share-Alike obligations.</p>
+
+          <h4>4. CC BY-SA is incompatible with other open data licenses</h4>
+          <p>CC BY-SA and the Open Database License (ODbL, used by OpenStreetMap) both have share-alike clauses and are mutually incompatible.</p>
+
+          <h4>5. CC0 removes all ambiguity</h4>
+          <p>CC0 waives all rights to the extent permitted by law. It works across jurisdictions whether the data is protected by copyright, database rights, or neither - and it is what Wikidata uses.</p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="whyCc0Open = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-snackbar v-model="saveToast" timeout="2500" color="success" top right>
+      {{ toastMessage }}
+    </v-snackbar>
+
+  </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify({
+      theme: { themes: { light: { primary: '#1976d2' } } }
+    }),
+    data: () => ({
+      sdConfirmed: null,
+      onConfirmed: null,
+      onLicenseChoice: null,
+      onCustomName: '',
+      onCustomUrl: '',
+      whyCc0Open: false,
+      saveToast: false,
+      toastMessage: '',
+      // snapshot of the last "saved" form values - used to gate the Set Licensing
+      // button on having unsaved changes
+      savedSnapshot: JSON.stringify({sd:null, on:null, choice:null, name:'', url:''}),
+      licenseOptions: [
+        { slug: 'cc-by-sa-4',  name: 'Creative Commons Attribution-ShareAlike 4.0', url: 'https://creativecommons.org/licenses/by-sa/4.0/' },
+        { slug: 'cc-by-4',     name: 'Creative Commons Attribution 4.0',            url: 'https://creativecommons.org/licenses/by/4.0/' },
+        { slug: 'gfdl-1-3',    name: 'GNU Free Documentation License 1.3',          url: 'https://www.gnu.org/licenses/fdl-1.3.html' },
+        { slug: 'odbl-1-0',    name: 'Open Database License (ODbL) 1.0',            url: 'https://opendatacommons.org/licenses/odbl/1-0/' },
+        { slug: 'odc-by-1-0',  name: 'Open Data Commons Attribution License 1.0',   url: 'https://opendatacommons.org/licenses/by/1-0/' },
+        { slug: 'odc-pddl',    name: 'Open Data Commons Public Domain Dedication',  url: 'https://opendatacommons.org/licenses/pddl/' },
+        { slug: 'other',       name: 'Other (specify name and URL)' }
+      ]
+    }),
+    computed: {
+      descON() {
+        if (this.onConfirmed === true) return 'Creative Commons CC0 License';
+        if (this.onConfirmed === false) {
+          if (this.onLicenseChoice === 'other') return this.onCustomName.trim() || null;
+          const opt = this.licenseOptions.find(l => l.slug === this.onLicenseChoice);
+          return opt ? opt.name : null;
+        }
+        return null;
+      },
+      urlON() {
+        if (this.onConfirmed === true) return 'https://creativecommons.org/publicdomain/zero/1.0/';
+        if (this.onConfirmed === false) {
+          if (this.onLicenseChoice === 'other') return this.onCustomUrl.trim() || null;
+          const opt = this.licenseOptions.find(l => l.slug === this.onLicenseChoice);
+          return opt ? opt.url : null;
+        }
+        return null;
+      },
+      hasAnyLicensing() {
+        return this.sdConfirmed === true || (this.descON && this.urlON);
+      },
+      apiText() {
+        if (this.sdConfirmed !== true && !(this.descON && this.urlON)) {
+          return '[licensing statement not yet configured]';
+        }
+        const sdPart = this.sdConfirmed === true
+          ? 'All structured data in the Item, Property, Lexeme and EntitySchema namespaces is available under the Creative Commons CC0 License'
+          : 'Structured data licensing is not yet confirmed';
+        const onPart = (this.descON && this.urlON)
+          ? 'text in the other namespaces is available under the ' + this.descON
+          : 'text in other namespaces licensing is not yet configured';
+        return sdPart + '; ' + onPart + '.';
+      },
+      canSave() {
+        return this.sdConfirmed !== false;
+      },
+      currentSnapshot() {
+        return JSON.stringify({
+          sd: this.sdConfirmed,
+          on: this.onConfirmed,
+          choice: this.onLicenseChoice,
+          name: this.onCustomName,
+          url: this.onCustomUrl
+        });
+      },
+      hasUnsavedChanges() {
+        return this.currentSnapshot !== this.savedSnapshot;
+      },
+      canShowCopyrightsHelper() {
+        return this.sdConfirmed === true && !!this.descON && !!this.urlON;
+      }
+    },
+    methods: {
+      resetState() {
+        this.sdConfirmed = null;
+        this.onConfirmed = null;
+        this.onLicenseChoice = null;
+        this.onCustomName = '';
+        this.onCustomUrl = '';
+      },
+      fakeSaveClicked() {
+        this.savedSnapshot = this.currentSnapshot;
+        this.toastMessage = 'Licensing saved. (Prototype only - no real persistence.)';
+        this.saveToast = true;
+      },
+      updateCopyrightsClicked() {
+        this.toastMessage = 'Project:Copyrights page updated. (Prototype only - no real persistence.)';
+        this.saveToast = true;
+      }
+    }
+  });
+</script>
+</body>
+</html>

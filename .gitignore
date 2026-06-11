@@ -1,0 +1,16 @@
+# Netlify deploy state (regenerated on deploy)
+.netlify/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node (in case any tooling is added later)
+node_modules/
+
+# Secrets - never commit
+.env
+.env.*
+secrets.env
+*.key
