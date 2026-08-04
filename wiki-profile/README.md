@@ -35,6 +35,18 @@ that apply to both have to be made twice.
 
 Change these only deliberately - each one came out of a round of review.
 
+**Resetting, both variants**
+
+Both variants carry a "Reset prototype" button in the top-right of the prototype banner. It
+is demo scaffolding, deliberately outside the simulated product UI, and it puts the page
+back to how it opens - in the full variant that means the consent lock is released and the
+two seeded submissions come back.
+
+Do not confuse it with the **Reset** button inside the profile card of the full variant.
+That one is product UI: it clears the answers, and a consent that has been given and saved
+survives it, because consent cannot be withdrawn from the UI. Only the out-of-band
+prototype reset releases the lock.
+
 **Wording, both variants**
 
 - Never say "suspended" in copy the manager reads. It is the internal term for what happens
@@ -53,9 +65,9 @@ Change these only deliberately - each one came out of a round of review.
 - The reuse question is kept verbatim from the `reuse/` prototype, including its long
   explanatory text and the bolded stability sentence in the first option.
 - The GDPR consent checkbox locks once the profile has been saved with consent given
-  (`consentLocked`). It cannot be unticked from the UI. Withdrawal is out of band, in
-  writing, per the fine print underneath. An earlier version modelled withdrawal in the UI
-  and was cut as overengineered.
+  (`consentLocked`). It cannot be unticked from the UI, and the form's own Reset button does
+  not clear it either. Withdrawal is out of band, in writing, per the fine print underneath.
+  An earlier version modelled withdrawal in the UI and was cut as overengineered.
 - The privacy warning sits directly above the consent checkbox, not elsewhere on the page.
 
 **Right pane, submissions**

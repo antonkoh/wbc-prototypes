@@ -50,6 +50,23 @@
       border-bottom: 2px solid #64b5f6;
       padding-bottom: 1px;
     }
+    .banner-nav .banner-sep {
+      width: 1px;
+      height: 14px;
+      background: rgba(255,255,255,0.25);
+    }
+    .banner-reset {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+    }
+    .banner-reset:hover { color: #fff; }
 
     .lane-banner {
       flex: 0 0 32px;
@@ -269,6 +286,8 @@
     <span class="banner-nav">
       <a href="../full/index.html" class="active">Full scope</a>
       <a href="../mvp/index.html">MVP scope</a>
+      <span class="banner-sep"></span>
+      <button class="banner-reset" @click="resetPrototype">Reset prototype</button>
     </span>
   </div>
 
@@ -688,6 +707,27 @@ const BLANK = {
   gdprConsent: false,
 };
 
+const SEEDED_SUBMISSIONS = [
+  {
+    id: 2,
+    date: '2026-06-03',
+    closed: '2026-06-21',
+    status: 'REJECTED',
+    reason: 'CC BY-NC is not a compliant license, since it does not allow commercial use.'
+  },
+  {
+    id: 1,
+    date: '2026-05-12',
+    closed: '2026-05-14',
+    status: 'CANCELLED',
+    reason: ''
+  },
+];
+
+function seededSubmissions() {
+  return JSON.parse(JSON.stringify(SEEDED_SUBMISSIONS));
+}
+
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -708,22 +748,7 @@ new Vue({
     requiredCount: 5,
     nextId: 3,
 
-    submissions: [
-      {
-        id: 2,
-        date: '2026-06-03',
-        closed: '2026-06-21',
-        status: 'REJECTED',
-        reason: 'CC BY-NC is not a compliant license, since it does not allow commercial use.'
-      },
-      {
-        id: 1,
-        date: '2026-05-12',
-        closed: '2026-05-14',
-        status: 'CANCELLED',
-        reason: ''
-      },
-    ],
+    submissions: seededSubmissions(),
 
     reuseOptions: [
       {
@@ -803,11 +828,32 @@ new Vue({
       this.toastMessage = 'Wiki profile saved. You can now submit this instance for review.';
       this.toast = true;
     },
+    // Clears the answers only. Consent given and saved once cannot be withdrawn from the
+    // UI, so a locked consent survives this - withdrawal is out of band, in writing.
     resetForm() {
+      const keepConsent = this.consentLocked;
+      Object.assign(this.$data, JSON.parse(JSON.stringify(BLANK)));
+      this.gdprConsent = keepConsent;
+      this.consentLocked = keepConsent;
+      this.$nextTick(() => { this.profileSaved = false; });
+      this.toastMessage = keepConsent
+        ? 'Answers cleared. Your consent stays on record.'
+        : 'Form cleared.';
+      this.toast = true;
+    },
+
+    // Demo scaffolding: puts the whole prototype back to how it opens, including the
+    // consent lock and the seeded submissions.
+    resetPrototype() {
       Object.assign(this.$data, JSON.parse(JSON.stringify(BLANK)));
       this.consentLocked = false;
+      this.checkLicense = false;
+      this.checkDisclaimer = false;
+      this.checkCommitment = false;
+      this.submissions = seededSubmissions();
+      this.nextId = 3;
       this.$nextTick(() => { this.profileSaved = false; });
-      this.toastMessage = 'Form cleared.';
+      this.toastMessage = 'Prototype reset.';
       this.toast = true;
     },
 
