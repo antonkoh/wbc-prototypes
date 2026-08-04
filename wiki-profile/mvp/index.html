@@ -50,6 +50,23 @@
       border-bottom: 2px solid #64b5f6;
       padding-bottom: 1px;
     }
+    .banner-nav .banner-sep {
+      width: 1px;
+      height: 14px;
+      background: rgba(255,255,255,0.25);
+    }
+    .banner-reset {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+    }
+    .banner-reset:hover { color: #fff; }
 
     .lane-banner {
       flex: 0 0 32px;
@@ -164,21 +181,6 @@
     .placeholder-text { font-size: 13px; color: #757575; line-height: 1.5; }
 
     /* ---------- confirmations ---------- */
-    .gate {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      border-radius: 4px;
-      padding: 12px 14px;
-      font-size: 13px;
-      line-height: 1.55;
-      margin-bottom: 18px;
-    }
-    .gate.info { background: #e8f1fb; color: #1a4971; }
-    .gate.ok   { background: #edf7ed; color: #2e5b30; }
-    .gate p { margin: 0 0 8px 0; }
-    .gate p:last-child { margin-bottom: 0; }
-
     .check-item { margin-bottom: 6px; }
     .check-item .v-label {
       font-size: 13.5px !important;
@@ -191,6 +193,8 @@
       line-height: 1.55;
       margin: 16px 0 6px 0;
     }
+    .check-lead:first-child { margin-top: 0; }
+    .external-link .v-icon { vertical-align: baseline; margin-left: 2px; }
 
     /* ---------- submissions ---------- */
     .sub-item {
@@ -202,7 +206,6 @@
     .sub-head { display: flex; align-items: center; gap: 10px; }
     .sub-date { font-size: 13.5px; font-weight: 500; color: #212121; }
     .sub-meta { font-size: 12px; color: #757575; margin-top: 6px; line-height: 1.55; }
-    .empty-note { font-size: 13px; color: #757575; }
   </style>
 </head>
 <body>
@@ -213,6 +216,8 @@
     <span class="banner-nav">
       <a href="../full/index.html">Full scope</a>
       <a href="../mvp/index.html" class="active">MVP scope</a>
+      <span class="banner-sep"></span>
+      <button class="banner-reset" @click="resetPrototype">Reset prototype</button>
     </span>
   </div>
 
@@ -260,28 +265,20 @@
           </v-card-subtitle>
 
           <v-card-text>
-            <div class="gate info">
-              <v-icon small color="blue darken-2">mdi-information-outline</v-icon>
-              <div>
-                <p>
-                  <strong>Two steps are needed.</strong> First, describe your use case in the
-                  <a :href="questionnaireUrl" target="_blank">review questionnaire</a>, which is
-                  hosted outside Wikibase Cloud.
-                </p>
-                <p>
-                  Then come back to this page and press <strong>Submit for review</strong> below,
-                  so we know your questionnaire is in and your instance is ready to be looked at.
-                  Without that, we do not learn about your request.
-                </p>
-              </div>
+            <div class="check-lead">
+              We need to know some details about your use case. The form to fill out these details
+              is in
+              <a class="external-link" :href="questionnaireUrl" target="_blank">an external survey
+                tool<v-icon x-small color="primary">mdi-open-in-new</v-icon></a>.
+              Please submit your answers there and come back to this page.
             </div>
 
             <div class="check-item">
               <v-checkbox v-model="checkQuestionnaire" hide-details dense class="mt-0">
                 <template v-slot:label>
                   <span>
-                    I confirm that I have filled out the review questionnaire for this
-                    Wikibase.<span class="required-mark">*</span>
+                    I confirm that I have filled out the questionnaire for this Wikibase in the
+                    external tool.<span class="required-mark">*</span>
                   </span>
                 </template>
               </v-checkbox>
@@ -352,14 +349,10 @@
           </v-card-actions>
         </v-card>
 
-        <v-card outlined class="profile-card">
+        <v-card outlined class="profile-card" v-if="submission">
           <v-card-title>Your submission</v-card-title>
           <v-card-text>
-            <div v-if="!submission" class="empty-note">
-              You have not submitted this instance for review yet.
-            </div>
-
-            <div v-else class="sub-item">
+            <div class="sub-item">
               <div class="sub-head">
                 <v-chip x-small label dark color="blue-grey">Submitted</v-chip>
                 <span class="sub-date">Submitted {{ submission.date }}</span>
@@ -370,16 +363,6 @@
               </div>
             </div>
           </v-card-text>
-
-          <template v-if="submission">
-            <v-divider></v-divider>
-            <v-card-actions class="px-4 py-2">
-              <v-spacer></v-spacer>
-              <v-btn text x-small color="grey darken-1" @click="resetPrototype">
-                Reset prototype
-              </v-btn>
-            </v-card-actions>
-          </template>
         </v-card>
 
       </div>

@@ -75,20 +75,23 @@ the "any further questions" section from the pilot questionnaire are all exclude
   in the platform at all, so showing the tab would misrepresent the scope.
 - The left pane is kept, but holds only the sentence "The manager fills out a questionnaire
   in an external tool." The two-pane frame is what makes the two variants comparable.
-- The explanation at the top of the Review tab is deliberately honest about the double
-  work: fill out the external questionnaire, then come back and press the button, because
-  otherwise we do not learn about the request.
 - The gate on the wiki profile is replaced by a **fourth mandatory checkbox**, "I confirm
-  that I have filled out the review questionnaire for this Wikibase." That is the only
-  signal available once the profile is out of the platform.
+  that I have filled out the questionnaire for this Wikibase in the external tool." That is
+  the only signal available once the profile is out of the platform.
+- The external questionnaire is introduced as a lead-and-checkbox pair, in the same shape
+  as the other three confirmations, rather than as a call-out box. The double work is
+  stated in the lead text, with an external-link icon on the link.
 - The other three confirmations (licensing, project disclaimer, manager commitment) are
   unchanged from the full variant.
 - A submission either exists or it does not. No states beyond `SUBMITTED`, no history, no
   cancelling, and the card is titled "Your submission", singular.
-- Nothing is seeded. The starting state is always "You have not submitted this instance for
-  review yet."
-- Since there is no cancelling, a "Reset prototype" button sits under the submission so the
-  flow can be demoed twice without a page reload. It is demo scaffolding, not a feature.
+- The submit card and the submission card are **mutually exclusive** - exactly one is on
+  screen at any time. There is no empty state for the submission card, because a manager
+  who has not submitted is looking at the form instead.
+- Nothing is seeded. The prototype always opens on the empty form.
+- Since there is no cancelling, a "Reset prototype" button sits in the top-right of the
+  prototype banner so the flow can be demoed twice without a page reload. It is demo
+  scaffolding, outside the simulated product UI on purpose.
 - The questionnaire link points at `https://example.org/...` - a placeholder. Swap it for
   the real form URL before showing this to anyone outside the team.
 
