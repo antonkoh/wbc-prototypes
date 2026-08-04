@@ -13,7 +13,25 @@ so both halves of the flow can be discussed in one view.
 The two panes are separated by a dark gutter in the same colour as the prototype banner,
 to make clear they are two different screens rather than one page.
 
-## Decisions baked into this prototype
+## Two variants
+
+The submissions story has an open capacity decision: build the wiki profile in the
+platform, or keep the questionnaire in an external tool for now. Each option has its own
+page, and the prototype banner switches between them.
+
+| URL | File | Scope |
+|---|---|---|
+| `/` | `index.html` | Landing page, picks one of the two |
+| `/full` | `full/index.html` | Full scope - wiki profile in the platform, full submission model |
+| `/mvp` | `mvp/index.html` | MVP scope - external questionnaire, one submission or none |
+
+The two variants are **separate files on purpose**. They are expected to diverge as the
+decision is discussed, and the full one must not break while the MVP one is edited. Fixes
+that apply to both have to be made twice.
+
+`assets/` stays at the folder root; both variants reference it as `../assets/`.
+
+## Decisions baked into the full variant
 
 Change these only deliberately - each one came out of a round of review.
 
@@ -50,6 +68,29 @@ Change these only deliberately - each one came out of a round of review.
 
 The questions about licensing, the manager commitment, the disclaimer for visitors, and
 the "any further questions" section from the pilot questionnaire are all excluded.
+
+## Decisions baked into the MVP variant
+
+- There is **no Profile tab** in the tab bar. In this option the wiki profile does not exist
+  in the platform at all, so showing the tab would misrepresent the scope.
+- The left pane is kept, but holds only the sentence "The manager fills out a questionnaire
+  in an external tool." The two-pane frame is what makes the two variants comparable.
+- The explanation at the top of the Review tab is deliberately honest about the double
+  work: fill out the external questionnaire, then come back and press the button, because
+  otherwise we do not learn about the request.
+- The gate on the wiki profile is replaced by a **fourth mandatory checkbox**, "I confirm
+  that I have filled out the review questionnaire for this Wikibase." That is the only
+  signal available once the profile is out of the platform.
+- The other three confirmations (licensing, project disclaimer, manager commitment) are
+  unchanged from the full variant.
+- A submission either exists or it does not. No states beyond `SUBMITTED`, no history, no
+  cancelling, and the card is titled "Your submission", singular.
+- Nothing is seeded. The starting state is always "You have not submitted this instance for
+  review yet."
+- Since there is no cancelling, a "Reset prototype" button sits under the submission so the
+  flow can be demoed twice without a page reload. It is demo scaffolding, not a feature.
+- The questionnaire link points at `https://example.org/...` - a placeholder. Swap it for
+  the real form URL before showing this to anyone outside the team.
 
 ## Stack
 

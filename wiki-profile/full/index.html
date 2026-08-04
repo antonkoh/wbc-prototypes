@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wiki profile - Wikibase Cloud Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.css">
+
+  <style>
+    /* ---------- Page shell ---------- */
+    html, body, #app { height: 100%; margin: 0; overflow: hidden; }
+    body { font-family: Roboto, sans-serif; }
+
+    .v-application { height: 100vh !important; }
+    .v-application--wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .prototype-banner {
+      flex: 0 0 28px;
+      height: 28px;
+      background: #37474f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-family: 'Jost', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .banner-nav { display: flex; align-items: center; gap: 16px; }
+    .banner-nav a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+    }
+    .banner-nav a:hover { color: #fff; }
+    .banner-nav a.active {
+      color: #fff;
+      border-bottom: 2px solid #64b5f6;
+      padding-bottom: 1px;
+    }
+
+    .lane-banner {
+      flex: 0 0 32px;
+      height: 32px;
+      background: #37474f;
+      color: #fff;
+      display: flex;
+      font-family: 'Jost', sans-serif;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+    .lane-banner > div {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .lane-banner > div.lane-gutter { flex: 0 0 42px; padding: 0; }
+
+    .panes {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .pane {
+      flex: 1;
+      overflow-y: auto;
+      height: 100%;
+      background: #f5f5f5;
+    }
+    .pane-gutter {
+      flex: 0 0 42px;
+      background: #37474f;
+      height: 100%;
+    }
+    .pane > .pane-content { zoom: 1.025; }
+
+    /* ---------- WBC chrome ---------- */
+    .wbc-header {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+    }
+    .wbc-header img.wbc-logo { height: 32px; width: auto; display: block; }
+
+    .wbc-tabs {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      padding: 0 12px;
+    }
+    .wbc-tab {
+      padding: 13px 14px;
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: #9e9e9e;
+      position: relative;
+      text-transform: uppercase;
+    }
+    .wbc-tab.active { color: #1976d2; }
+    .wbc-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 2px;
+      background: #1976d2;
+    }
+
+    .profile-content { padding: 16px 18px 40px 18px; }
+
+    .profile-card { margin-bottom: 16px; }
+    .profile-card .v-card__title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      padding-bottom: 8px;
+    }
+    .profile-card .v-card__subtitle {
+      padding-top: 0;
+      padding-bottom: 14px;
+      font-size: 0.85rem;
+    }
+
+    .required-mark { color: #c00; font-weight: 700; margin-left: 2px; }
+
+    .placeholder-text { font-size: 13px; color: #757575; line-height: 1.5; }
+    .placeholder-row { margin-bottom: 4px; }
+
+    .privacy-note {
+      background: #fdf3e3;
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #7a4f10;
+      margin-bottom: 18px;
+    }
+
+    .q-block { padding: 4px 0 2px 0; }
+    .q-lead {
+      font-size: 15px;
+      color: #212121;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .q-sub {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+    .q-examples {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.55;
+      margin: 0 0 12px 0;
+      padding-left: 20px;
+    }
+    .q-examples li { margin-bottom: 5px; }
+
+    .reuse-option {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      background: #fff;
+      transition: background 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .reuse-option.selected { border-color: #1976d2; background: #f3f8fd; }
+    .reuse-option .reuse-option-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #212121;
+    }
+    .reuse-option .reuse-option-desc {
+      margin-top: 4px;
+      margin-left: 32px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .optional-tag {
+      font-size: 11px;
+      color: #757575;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-left: 6px;
+    }
+
+    /* ---------- confirmations ---------- */
+    .gate {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+    .gate.ok   { background: #edf7ed; color: #2e5b30; }
+    .gate.warn { background: #fdf3e3; color: #7a4f10; }
+
+    .check-item { margin-bottom: 6px; }
+    .check-item .v-label {
+      font-size: 13.5px !important;
+      line-height: 1.55 !important;
+      color: #333 !important;
+    }
+    .check-lead {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.55;
+      margin: 16px 0 6px 0;
+    }
+    .consent-fineprint {
+      font-size: 12px;
+      color: #757575;
+      line-height: 1.5;
+      margin: 6px 0 0 32px;
+    }
+
+    /* ---------- submissions ---------- */
+    .sub-item {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background: #fff;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .sub-head { display: flex; align-items: center; gap: 10px; }
+    .sub-date { font-size: 13.5px; font-weight: 500; color: #212121; }
+    .sub-meta { font-size: 12px; color: #757575; margin-top: 2px; }
+    .sub-reason {
+      margin-top: 10px;
+      border-left: 3px solid #bdbdbd;
+      padding: 6px 0 6px 12px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.55;
+    }
+    .empty-note { font-size: 13px; color: #757575; }
+  </style>
+</head>
+<body>
+<div id="app">
+<v-app>
+  <div class="prototype-banner">
+    <span>Prototype - wiki profile and review submissions</span>
+    <span class="banner-nav">
+      <a href="../full/" class="active">Full scope</a>
+      <a href="../mvp/">MVP scope</a>
+    </span>
+  </div>
+
+  <div class="lane-banner">
+    <div>Manager describes the use case</div>
+    <div class="lane-gutter"></div>
+    <div>Manager submits the instance for review</div>
+  </div>
+
+  <div class="panes">
+
+    <!-- ==================================================== LEFT: PROFILE -->
+    <div class="pane left">
+     <div class="pane-content">
+
+      <div class="wbc-header">
+        <img class="wbc-logo" src="../assets/wikibase-cloud-logo.png" alt="Wikibase Cloud">
+      </div>
+
+      <div class="wbc-tabs">
+        <div class="wbc-tab active">Profile</div>
+        <div class="wbc-tab">Review</div>
+        <div class="wbc-tab">Settings</div>
+        <div class="wbc-tab">Features</div>
+      </div>
+
+      <div class="profile-content">
+
+        <v-card outlined class="profile-card">
+          <v-card-title>Details</v-card-title>
+          <v-card-text>
+            <div class="placeholder-text">
+              <div class="placeholder-row"><strong>Status:</strong> Published</div>
+              <div class="placeholder-row"><strong>Site Name:</strong> anton12</div>
+              <div class="placeholder-row"><strong>Domain:</strong> anton12.wikibase.cloud</div>
+              <div class="placeholder-row"><strong>Date Created:</strong> 2025-09-30</div>
+              <div class="placeholder-row"><strong>Database Version:</strong> 1.43.0</div>
+            </div>
+          </v-card-text>
+        </v-card>
+
+        <v-card outlined class="profile-card">
+          <v-card-title>About this Wikibase</v-card-title>
+          <v-card-subtitle>
+            Describe your use case here. This is what the review committee reads when you submit
+            this instance to keep it beyond its three months.
+          </v-card-subtitle>
+
+          <v-card-text>
+
+            <!-- 1. intended for reuse -->
+            <div class="q-block">
+              <div class="q-lead">
+                Is the data in this Wikibase intended for reuse by other people?<span class="required-mark">*</span>
+              </div>
+              <div class="q-sub">
+                Wikibase serves different use cases: from sharing data that anyone can rely on to
+                get insights and build useful applications, to data staging and experimentation in
+                an isolated sandbox. As people explore the Wikibase ecosystem, we want to make it
+                easier for them to identify and discover datasets that are actually meant for reuse
+                by audiences beyond their contributing community, taken care of and unlikely to
+                disappear unexpectedly.
+              </div>
+              <div class="q-sub">Choose the option that best describes the data in this Wikibase.</div>
+
+              <v-radio-group v-model="reuseChoice" hide-details class="mt-0" dense>
+                <div
+                  v-for="opt in reuseOptions"
+                  :key="opt.value"
+                  class="reuse-option"
+                  :class="{ selected: reuseChoice === opt.value }"
+                  @click="reuseChoice = opt.value"
+                >
+                  <v-radio :value="opt.value">
+                    <template v-slot:label>
+                      <span class="reuse-option-title">{{ opt.title }}</span>
+                    </template>
+                  </v-radio>
+                  <div class="reuse-option-desc" v-html="opt.desc"></div>
+                </div>
+              </v-radio-group>
+            </div>
+
+            <v-divider class="my-5"></v-divider>
+
+            <!-- 2. intended purpose -->
+            <div class="q-block">
+              <div class="q-lead">
+                What is the intended purpose of this Wikibase?<span class="required-mark">*</span>
+              </div>
+              <div class="q-sub">
+                Please describe how you intend to use this Wikibase in more detail (separate
+                questions about the dataset, intended audience and contributors will follow).
+              </div>
+              <div class="q-sub">Here are examples of the information we are looking for:</div>
+              <ul class="q-examples">
+                <li>I would like to publish a dataset, so I could build an application on top of it.</li>
+                <li>My community would like to collaboratively maintain a dataset on a topic of our interest.</li>
+                <li>I am teaching how to use Wikibase to a group of students and plan to use this instance to showcase its functionality.</li>
+                <li>I am refining a dataset before importing it into Wikidata. It can be deleted once I'm done.</li>
+                <li>I am building a tool for data import into Wikibase and using this Wikibase as an experimentation ground.</li>
+              </ul>
+              <v-textarea v-model="purpose" outlined auto-grow rows="4" hide-details
+                placeholder="Describe the purpose of this Wikibase"></v-textarea>
+            </div>
+
+            <v-divider class="my-5"></v-divider>
+
+            <!-- 3. the dataset -->
+            <div class="q-block">
+              <div class="q-lead">
+                Please describe the dataset
+              </div>
+              <div class="q-sub">
+                <strong>If the Wikibase is intended to host a real dataset or prepare a dataset
+                before its contribution elsewhere</strong>, please briefly describe its topic or
+                domain, estimated size and how it may grow over time, source of the data and
+                approach to its curation.
+              </div>
+              <div class="q-sub">
+                Please describe how you expect contributions to happen (manually, import,
+                regularity, plan for bulk imports).
+              </div>
+              <div class="q-sub">
+                If the dataset includes information about living people or sensitive topics, please
+                describe how you intend to take care of it and ensure compliance with the Wikibase
+                Cloud policies.
+              </div>
+              <v-textarea v-model="dataset" outlined auto-grow rows="4" hide-details
+                placeholder="Describe the dataset"></v-textarea>
+            </div>
+
+            <v-divider class="my-5"></v-divider>
+
+            <!-- 4. audience -->
+            <div class="q-block">
+              <div class="q-lead">
+                Who is the intended audience? How will they benefit from it?
+              </div>
+              <div class="q-sub">
+                <strong>If the Wikibase is intended to host a real dataset or prepare a dataset
+                before its contribution elsewhere</strong>, please describe people or groups who
+                meaningfully benefit from accessing and reusing this data.
+              </div>
+              <div class="q-sub">
+                Do you or the contributors plan to build an application or a tool yourself? If you
+                already have an idea for an application or a tool in mind, please share details
+                and/or a URL.
+              </div>
+              <v-textarea v-model="audience" outlined auto-grow rows="4" hide-details
+                placeholder="Describe the intended audience and how they benefit"></v-textarea>
+            </div>
+
+            <v-divider class="my-5"></v-divider>
+
+            <!-- 5. contributors -->
+            <div class="q-block">
+              <div class="q-lead">
+                Who will contribute to this Wikibase?<span class="required-mark">*</span>
+              </div>
+              <div class="q-sub">
+                Please describe the individual, group, or organization that you expect contributing
+                to this project.
+              </div>
+              <ul class="q-examples">
+                <li>If it's an organization, consider mentioning its mission, economical sector, field of work, approximate size.</li>
+                <li>If it's an informal group or community of people, describe what brings them together.</li>
+              </ul>
+              <div class="q-sub">
+                If relevant, mention any limitations in funding, technical capacity, hosting
+                infrastructure, or long-term sustainability that make Wikibase Cloud necessary for
+                this project.
+              </div>
+              <v-textarea v-model="contributors" outlined auto-grow rows="4" hide-details
+                placeholder="Describe who will contribute"></v-textarea>
+            </div>
+
+            <v-divider class="my-5"></v-divider>
+
+            <!-- 6. knowledge equity -->
+            <div class="q-block">
+              <div class="q-lead">
+                Contribution to knowledge equity<span class="required-mark">*</span>
+              </div>
+              <div class="q-sub">
+                We want to support knowledge equity in the Wikibase ecosystem and to understand who
+                currently sees their Wikibase contributing towards it.
+              </div>
+              <div class="q-sub">
+                Do you believe that this Wikibase contributes positively to knowledge equity in the
+                Wikibase ecosystem in any way?
+              </div>
+              <v-radio-group v-model="equity" hide-details class="mt-0" dense>
+                <v-radio value="yes" label="Yes, I believe it does"></v-radio>
+                <v-radio value="no" label="No, I don't believe it does"></v-radio>
+                <v-radio value="unsure" label="I'm not sure"></v-radio>
+                <v-radio value="no-say" label="I prefer not to say"></v-radio>
+              </v-radio-group>
+            </div>
+
+            <!-- 7. equity free text, only when yes or unsure -->
+            <template v-if="equity === 'yes' || equity === 'unsure'">
+              <v-divider class="my-5"></v-divider>
+              <div class="q-block">
+                <div class="q-lead">
+                  If you'd like, please tell us in what way(s) it contributes to knowledge equity.
+                  <span class="optional-tag">optional</span>
+                </div>
+                <div class="q-sub">
+                  For example, through the knowledge it contributes and/or the people holding and
+                  sharing it.
+                </div>
+                <v-textarea v-model="equityDetail" outlined auto-grow rows="3" hide-details
+                  placeholder="Tell us more"></v-textarea>
+              </div>
+            </template>
+
+            <v-divider class="my-5"></v-divider>
+
+            <!-- 8. GDPR consent -->
+            <div class="q-block">
+              <div class="privacy-note">
+                &#9888;&#65039; Please avoid sharing any personal or sensitive information. This
+                information will be visible to WMDE employees and external members of the review
+                committee.
+              </div>
+
+              <div class="check-item">
+                <v-checkbox v-model="gdprConsent" :disabled="consentLocked" hide-details dense
+                  class="mt-0">
+                  <template v-slot:label>
+                    <span>
+                      Insofar as I voluntarily provide information here regarding special categories
+                      of personal data as defined in art. 9 of the GDPR, I consent to the collection
+                      and processing of this data for the purpose of creating a Wikibase Cloud
+                      instance.<span class="required-mark">*</span>
+                    </span>
+                  </template>
+                </v-checkbox>
+              </div>
+              <div class="consent-fineprint">
+                This consent may be withdrawn in writing at any time with future effect. If
+                necessary, please send your notice of withdrawal to: Wikimedia Deutschland e.V.,
+                Tempelhofer Ufer 23-24, 10963 Berlin; email:
+                <a href="mailto:datenschutz@wikimedia.de">datenschutz@wikimedia.de</a>.
+              </div>
+            </div>
+
+          </v-card-text>
+
+          <v-divider></v-divider>
+          <v-card-actions class="px-4 py-3">
+            <span class="placeholder-text">
+              <template v-if="profileComplete && profileSaved">Saved. All required questions answered.</template>
+              <template v-else-if="profileComplete">Unsaved changes.</template>
+              <template v-else>{{ answeredCount }} of {{ requiredCount }} required answers</template>
+            </span>
+            <v-spacer></v-spacer>
+            <v-btn text small @click="resetForm">Reset</v-btn>
+            <v-btn color="primary" depressed small :disabled="!profileComplete || profileSaved"
+              @click="saveProfile">Save</v-btn>
+          </v-card-actions>
+        </v-card>
+
+      </div>
+     </div>
+    </div>
+
+    <div class="pane-gutter"></div>
+
+    <!-- ==================================================== RIGHT: REVIEW -->
+    <div class="pane right">
+     <div class="pane-content">
+
+      <div class="wbc-header">
+        <img class="wbc-logo" src="../assets/wikibase-cloud-logo.png" alt="Wikibase Cloud">
+      </div>
+
+      <div class="wbc-tabs">
+        <div class="wbc-tab">Profile</div>
+        <div class="wbc-tab active">Review</div>
+        <div class="wbc-tab">Settings</div>
+        <div class="wbc-tab">Features</div>
+      </div>
+
+      <div class="profile-content">
+
+        <v-card outlined class="profile-card" v-if="!openSubmission">
+          <v-card-title>Submit for review</v-card-title>
+          <v-card-subtitle>
+            This instance is temporary. To keep it, submit it for review by the hosting policy
+            review committee.
+          </v-card-subtitle>
+
+          <v-card-text>
+            <div class="gate" :class="profileSaved ? 'ok' : 'warn'">
+              <v-icon small :color="profileSaved ? 'green darken-2' : 'orange darken-3'">
+                {{ profileSaved ? 'mdi-check-circle-outline' : 'mdi-alert-circle-outline' }}
+              </v-icon>
+              <span v-if="profileSaved">
+                Your wiki profile is complete and saved. The committee will read it as part of this
+                application.
+              </span>
+              <span v-else>
+                Fill out and save your wiki profile before submitting.
+              </span>
+            </div>
+
+            <div class="check-lead">
+              We require that the structured data hosted on the platform is in the public domain or
+              released under
+              <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank">CC0</a>,
+              and the license for the text in other namespaces allows commercial and non-commercial
+              use and derivatives.
+            </div>
+
+            <div class="check-item">
+              <v-checkbox v-model="checkLicense" :disabled="!canTick" hide-details dense class="mt-0">
+                <template v-slot:label>
+                  <span>
+                    I confirm that the licensing rules for this Wikibase are compliant with the
+                    requirements above and described on the
+                    <a href="https://anton12.wikibase.cloud/wiki/Project:Copyrights" target="_blank"
+                       @click.stop>Project:Copyrights</a> page.<span class="required-mark">*</span>
+                  </span>
+                </template>
+              </v-checkbox>
+            </div>
+
+            <div class="check-lead">
+              Visitors to your Wikibase should be able to understand what your project is about and
+              whether they are welcome to contribute, reuse or refer to this data. We require making
+              this clear in the information on the
+              <a href="https://anton12.wikibase.cloud/" target="_blank">main</a> or
+              <a href="https://anton12.wikibase.cloud/wiki/Project:About" target="_blank">Project:About</a>
+              page.
+            </div>
+
+            <div class="check-item">
+              <v-checkbox v-model="checkDisclaimer" :disabled="!canTick" hide-details dense class="mt-0">
+                <template v-slot:label>
+                  <span>
+                    I confirm that the information describing the project to external users is
+                    visible on my Wikibase.<span class="required-mark">*</span>
+                  </span>
+                </template>
+              </v-checkbox>
+            </div>
+
+            <div class="check-item mt-4">
+              <v-checkbox v-model="checkCommitment" :disabled="!canTick" hide-details dense class="mt-0">
+                <template v-slot:label>
+                  <span>
+                    I confirm that I intend to take further care of the instance and ensure its
+                    compliance with Wikibase Cloud policies, stay reachable or pass my
+                    responsibilities over to another manager with Terms of Use-based
+                    responsibility.<span class="required-mark">*</span>
+                  </span>
+                </template>
+              </v-checkbox>
+            </div>
+          </v-card-text>
+
+          <v-divider></v-divider>
+          <v-card-actions class="px-4 py-3">
+            <span class="placeholder-text">{{ blockReason || 'Ready to submit.' }}</span>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" depressed small :disabled="!canSubmit" @click="submitApplication">
+              Submit for review
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+
+        <v-card outlined class="profile-card">
+          <v-card-title>Your submissions</v-card-title>
+          <v-card-text>
+            <div v-if="!submissions.length" class="empty-note">
+              You have not submitted this instance for review yet.
+            </div>
+
+            <div v-for="s in submissions" :key="s.id" class="sub-item">
+              <div class="sub-head">
+                <v-chip x-small label dark :color="statusColor(s.status)">{{ statusLabel(s.status) }}</v-chip>
+                <span class="sub-date">Submitted {{ s.date }}</span>
+                <v-spacer></v-spacer>
+                <v-btn v-if="s.status === 'SUBMITTED'" x-small text color="error"
+                  @click="cancelSubmission(s)">Cancel</v-btn>
+              </div>
+              <div class="sub-meta" v-if="s.closed">{{ statusLabel(s.status) }} on {{ s.closed }}</div>
+
+              <div v-if="s.reason" class="sub-reason">{{ s.reason }}</div>
+            </div>
+          </v-card-text>
+        </v-card>
+
+      </div>
+     </div>
+    </div>
+
+  </div>
+
+  <v-snackbar v-model="toast" timeout="4000">{{ toastMessage }}</v-snackbar>
+</v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.js"></script>
+<script>
+const BLANK = {
+  reuseChoice: null,
+  purpose: '',
+  dataset: '',
+  audience: '',
+  contributors: '',
+  equity: null,
+  equityDetail: '',
+  gdprConsent: false,
+};
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+new Vue({
+  el: '#app',
+  vuetify: new Vuetify(),
+  data: () => Object.assign({}, BLANK, {
+    profileSaved: false,
+    consentLocked: false,
+
+    checkLicense: false,
+    checkDisclaimer: false,
+    checkCommitment: false,
+
+    toast: false,
+    toastMessage: '',
+    requiredCount: 5,
+    nextId: 3,
+
+    submissions: [
+      {
+        id: 2,
+        date: '2026-06-03',
+        closed: '2026-06-21',
+        status: 'REJECTED',
+        reason: 'CC BY-NC is not a compliant license, since it does not allow commercial use.'
+      },
+      {
+        id: 1,
+        date: '2026-05-12',
+        closed: '2026-05-14',
+        status: 'CANCELLED',
+        reason: ''
+      },
+    ],
+
+    reuseOptions: [
+      {
+        value: 'intended',
+        title: 'Intended for reuse',
+        desc: 'Other people are welcome to reference this data from other datasets of the Linked Open Data web and build tools and applications querying it. <strong>By selecting this, I confirm my understanding that other people will rely on the stability and persistence of this data.</strong>'
+      },
+      {
+        value: 'not-ready',
+        title: 'Not ready for reuse',
+        desc: 'The data might eventually become reusable, but is still in a turbulent state: it may change frequently, be reorganized or removed entirely. Other people are not encouraged to rely on it in their use cases just yet.'
+      },
+      {
+        value: 'not-intended',
+        title: 'Not intended for reuse',
+        desc: 'This is a purely internal use case. Despite being publicly accessible, the data is not intended to be referenced from other datasets or queried from external tools and applications. Other people are not encouraged to rely on it in their use cases.'
+      },
+      {
+        value: 'not-sure',
+        title: 'Not sure - please help decide during review',
+        desc: 'I am unsure which description best fits this project and would appreciate guidance during the review process.'
+      }
+    ],
+  }),
+
+  computed: {
+    answeredCount() {
+      return [
+        this.reuseChoice,
+        this.purpose.trim(),
+        this.contributors.trim(),
+        this.equity,
+        this.gdprConsent,
+      ].filter(Boolean).length;
+    },
+    profileComplete() { return this.answeredCount === this.requiredCount; },
+
+    openSubmission() {
+      return this.submissions.find(s => s.status === 'SUBMITTED' || s.status === 'IN_REVIEW');
+    },
+    allChecked() {
+      return this.checkLicense && this.checkDisclaimer && this.checkCommitment;
+    },
+    canTick() { return this.profileSaved && !this.openSubmission; },
+    canSubmit() { return this.canTick && this.allChecked; },
+
+    blockReason() {
+      if (!this.profileSaved) return 'Your wiki profile is not saved yet.';
+      if (!this.allChecked) return 'Tick all three confirmations to submit.';
+      return '';
+    },
+  },
+
+  watch: {
+    reuseChoice()  { this.profileSaved = false; },
+    purpose()      { this.profileSaved = false; },
+    dataset()      { this.profileSaved = false; },
+    audience()     { this.profileSaved = false; },
+    contributors() { this.profileSaved = false; },
+    equity()       { this.profileSaved = false; },
+    gdprConsent()  { this.profileSaved = false; },
+  },
+
+  methods: {
+    statusLabel(s) {
+      return { SUBMITTED: 'Submitted', IN_REVIEW: 'In review', APPROVED: 'Approved',
+               REJECTED: 'Rejected', CANCELLED: 'Cancelled' }[s];
+    },
+    statusColor(s) {
+      return { SUBMITTED: 'blue-grey', IN_REVIEW: 'indigo', APPROVED: 'green darken-1',
+               REJECTED: 'red darken-2', CANCELLED: 'grey' }[s];
+    },
+
+    saveProfile() {
+      this.profileSaved = true;
+      if (this.gdprConsent) this.consentLocked = true;
+      this.toastMessage = 'Wiki profile saved. You can now submit this instance for review.';
+      this.toast = true;
+    },
+    resetForm() {
+      Object.assign(this.$data, JSON.parse(JSON.stringify(BLANK)));
+      this.consentLocked = false;
+      this.$nextTick(() => { this.profileSaved = false; });
+      this.toastMessage = 'Form cleared.';
+      this.toast = true;
+    },
+
+    submitApplication() {
+      this.submissions.unshift({
+        id: this.nextId++,
+        date: today(),
+        closed: null,
+        status: 'SUBMITTED',
+        reason: ''
+      });
+      this.checkLicense = false;
+      this.checkDisclaimer = false;
+      this.checkCommitment = false;
+      this.toastMessage = 'Submitted for review. Your instance will not be suspended while the review is open.';
+      this.toast = true;
+    },
+    cancelSubmission(s) {
+      s.status = 'CANCELLED';
+      s.closed = today();
+      this.toastMessage = 'Submission cancelled. You can submit a new one.';
+      this.toast = true;
+    },
+  },
+});
+</script>
+</body>
+</html>
