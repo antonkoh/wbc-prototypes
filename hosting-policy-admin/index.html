@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hosting Policy admin - Wikibase Cloud Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.css">
+
+  <style>
+    html, body { margin: 0; }
+    body { font-family: Roboto, sans-serif; }
+
+    .prototype-banner {
+      height: 28px;
+      background: #37474f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      font-family: 'Jost', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .mono { font-family: 'Roboto Mono', Consolas, monospace; font-size: 13px; }
+    .domain { font-weight: 500; }
+    .muted { color: rgba(0,0,0,.55); }
+    .tiny { font-size: 12px; }
+
+    .v-data-table tbody tr { cursor: pointer; }
+    .v-data-table tbody tr.row-selected { background: #e8eef5 !important; }
+
+    .detail-block { border-top: 1px solid rgba(0,0,0,.09); padding-top: 14px; margin-top: 14px; }
+    .detail-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: .09em;
+      color: rgba(0,0,0,.55); margin-bottom: 2px;
+    }
+    .rule-hint {
+      background: #f4f6f8; border-left: 3px solid #90a4ae;
+      padding: 8px 12px; font-size: 12.5px; color: rgba(0,0,0,.7);
+    }
+    .date-past {
+      background: #fdecea; color: #b71c1c;
+      padding: 1px 6px; border-radius: 3px; display: inline-block;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+<v-app>
+  <div class="prototype-banner">Prototype - Hosting Policy review admin (RCA)</div>
+
+  <v-app-bar flat color="white" dense style="border-bottom:1px solid rgba(0,0,0,.09)">
+    <v-toolbar-title style="font-family:'Jost',sans-serif;font-weight:600">
+      Wikibase Cloud <span class="muted" style="font-weight:400">/ hosting policy</span>
+    </v-toolbar-title>
+    <v-spacer></v-spacer>
+    <v-tabs v-model="tab" right optional>
+      <v-tab>Submissions</v-tab>
+      <v-tab>Instances</v-tab>
+    </v-tabs>
+  </v-app-bar>
+
+  <v-main style="background:#fafafa">
+  <v-tabs-items v-model="tab">
+
+    <!-- ==================================================== SUBMISSIONS -->
+    <v-tab-item>
+      <v-container fluid class="pa-5">
+        <v-row no-gutters>
+          <v-col :cols="selected ? 8 : 12" class="pr-4">
+
+            <v-card flat outlined class="mb-4">
+              <v-card-text class="pb-2">
+                <v-row dense align="center">
+                  <v-col cols="12" md="4">
+                    <v-text-field v-model="search" dense outlined hide-details clearable
+                      label="Domain or instance ID" prepend-inner-icon="mdi-magnify"></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-select v-model="statusFilter" :items="statusOptions" dense outlined
+                      hide-details multiple chips small-chips clearable
+                      label="Submission status"></v-select>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <v-select v-model="instanceFilter" :items="instanceStateOptions" dense outlined
+                      hide-details clearable label="Instance state"></v-select>
+                  </v-col>
+                  <v-col cols="12" md="1" class="text-right">
+                    <v-btn text small @click="resetFilters">Reset</v-btn>
+                  </v-col>
+                </v-row>
+                <div class="mt-3 mb-1">
+                  <v-chip-group v-model="quickFilter" mandatory>
+                    <v-chip small filter value="all">All ({{ submissions.length }})</v-chip>
+                    <v-chip small filter value="queue">Needs review ({{ countOpen }})</v-chip>
+                    <v-chip small filter value="mine">In review ({{ countInReview }})</v-chip>
+                    <v-chip small filter value="closed">Closed ({{ countClosed }})</v-chip>
+                  </v-chip-group>
+                </div>
+              </v-card-text>
+            </v-card>
+
+            <v-card flat outlined>
+              <v-data-table
+                :headers="headers"
+                :items="filteredRows"
+                :items-per-page="15"
+                item-key="id"
+                dense
+                :item-class="rowClass"
+                @click:row="select">
+
+                <template v-slot:item.arrived="{ item }">
+                  <span class="mono">{{ item.arrived }}</span>
+                  <div class="tiny muted">{{ daysAgo(item.arrived) }}</div>
+                </template>
+
+                <template v-slot:item.domain="{ item }">
+                  <div class="domain">{{ item.instance.domain }}</div>
+                  <div class="tiny muted mono">ID {{ item.instance.id }}</div>
+                </template>
+
+                <template v-slot:item.instance_state="{ item }">
+                  <v-chip x-small label :color="stateColor(item.instance.state)" dark>
+                    {{ item.instance.state }}
+                  </v-chip>
+                  <v-tooltip bottom v-if="isProtected(item.instance)">
+                    <template v-slot:activator="{ on }">
+                      <v-icon v-on="on" small color="teal darken-2" class="ml-1">mdi-lock</v-icon>
+                    </template>
+                    <span>Protected - not suspended while a submission is open</span>
+                  </v-tooltip>
+                </template>
+
+                <template v-slot:item.status="{ item }">
+                  <v-chip x-small label :color="statusColor(item.status)" dark>
+                    {{ label(item.status) }}
+                  </v-chip>
+                </template>
+
+                <template v-slot:item.suspend_at="{ item }">
+                  <span v-if="item.instance.suspendAt" class="mono"
+                    :class="{ 'date-past': isPast(item.instance.suspendAt) }">
+                    {{ item.instance.suspendAt }}
+                  </span>
+                  <span v-else class="muted tiny">none</span>
+                  <div v-if="item.instance.suspendReason" class="tiny muted">
+                    {{ item.instance.suspendReason }}
+                  </div>
+                </template>
+
+                <template v-slot:no-data>
+                  <div class="pa-6 muted">No submissions match these filters.</div>
+                </template>
+              </v-data-table>
+            </v-card>
+          </v-col>
+
+          <!-- ------------------------------------------------ detail pane -->
+          <v-col cols="4" v-if="selected">
+            <v-card flat outlined>
+              <v-card-title class="pb-1" style="font-family:'Jost',sans-serif">
+                <div>
+                  <div class="domain">{{ selected.instance.domain }}</div>
+                  <div class="tiny muted mono">{{ selected.id }} &middot; instance {{ selected.instance.id }}</div>
+                </div>
+                <v-spacer></v-spacer>
+                <v-btn icon small @click="selected = null"><v-icon small>mdi-close</v-icon></v-btn>
+              </v-card-title>
+
+              <v-card-text>
+                <v-row dense>
+                  <v-col cols="6">
+                    <div class="detail-label">Arrived</div>
+                    <div class="mono">{{ selected.arrived }}</div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="detail-label">Instance created</div>
+                    <div class="mono">{{ selected.instance.created }}</div>
+                  </v-col>
+                  <v-col cols="6" class="mt-3">
+                    <div class="detail-label">Instance state</div>
+                    <v-chip x-small label dark :color="stateColor(selected.instance.state)">
+                      {{ selected.instance.state }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="6" class="mt-3">
+                    <div class="detail-label">Submission status</div>
+                    <v-chip x-small label dark :color="statusColor(selected.status)">
+                      {{ label(selected.status) }}
+                    </v-chip>
+                  </v-col>
+                </v-row>
+
+                <div class="detail-block">
+                  <div class="detail-label">Stated purpose</div>
+                  <div style="font-size:13.5px">{{ selected.purpose }}</div>
+                </div>
+
+                <div v-if="priorSubmissions(selected).length" class="detail-block">
+                  <div class="detail-label">Earlier submissions for this instance</div>
+                  <div v-for="p in priorSubmissions(selected)" :key="p.id" class="tiny mb-1">
+                    <span class="mono">{{ p.arrived }}</span>
+                    <v-chip x-small label dark :color="statusColor(p.status)" class="ml-1">
+                      {{ label(p.status) }}
+                    </v-chip>
+                    <div class="muted" v-if="p.note">{{ p.note }}</div>
+                  </div>
+                </div>
+
+                <!-- pick up -->
+                <div class="detail-block" v-if="selected.status === 'SUBMITTED'">
+                  <v-btn block color="primary" depressed @click="pickUp(selected)">
+                    <v-icon left small>mdi-play</v-icon> Pick up for review
+                  </v-btn>
+                  <div v-if="selected.instance.state === 'suspended'" class="rule-hint mt-3">
+                    This instance is suspended. Picking it up will unsuspend it for the duration of
+                    the review.
+                  </div>
+                </div>
+
+                <!-- decide -->
+                <div class="detail-block" v-if="selected.status === 'IN_REVIEW'">
+                  <div class="detail-label">Decision</div>
+                  <v-textarea v-model="draftNote" outlined dense rows="3" hide-details
+                    label="Explanation (recorded on the submission)" class="mb-3"></v-textarea>
+
+                  <v-radio-group v-model="approveMode" dense hide-details class="mt-0 mb-2"
+                    v-if="true">
+                    <div class="detail-label mb-1">If approved</div>
+                    <v-radio value="clear" label="No re-evaluation - remove the suspension date"></v-radio>
+                    <v-radio value="future" label="Re-evaluate later - set a new date"></v-radio>
+                  </v-radio-group>
+                  <v-menu v-if="approveMode === 'future'" v-model="approveDateMenu"
+                    :close-on-content-click="false" offset-y>
+                    <template v-slot:activator="{ on }">
+                      <v-text-field v-model="approveDate" v-on="on" dense outlined hide-details
+                        readonly label="Re-evaluation date" class="mb-3"></v-text-field>
+                    </template>
+                    <v-date-picker v-model="approveDate" @input="approveDateMenu = false"
+                      :min="today"></v-date-picker>
+                  </v-menu>
+
+                  <v-row dense class="mt-2">
+                    <v-col cols="6">
+                      <v-btn block color="success" depressed :disabled="!draftNote"
+                        @click="approve(selected)">Approve</v-btn>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-btn block color="error" depressed :disabled="!draftNote"
+                        @click="reject(selected)">Reject</v-btn>
+                    </v-col>
+                  </v-row>
+                  <div class="rule-hint mt-3">
+                    Rejecting sets a suspension date of {{ defaultRejectDate(selected.instance) }} -
+                    two weeks out, but never earlier than three months after the instance was created.
+                    You can change it afterwards.
+                  </div>
+                </div>
+
+                <div class="detail-block" v-if="isClosed(selected.status) && selected.note">
+                  <div class="detail-label">Recorded explanation</div>
+                  <div style="font-size:13.5px">{{ selected.note }}</div>
+                </div>
+
+                <!-- suspension date -->
+                <div class="detail-block">
+                  <div class="detail-label">Suspension due</div>
+                  <div v-if="selected.instance.suspendAt" class="mb-2">
+                    <span class="mono" :class="{ 'date-past': isPast(selected.instance.suspendAt) }">
+                      {{ selected.instance.suspendAt }}
+                    </span>
+                    <span class="tiny muted"> &middot; {{ selected.instance.suspendReason }}</span>
+                  </div>
+                  <div v-else-if="selected.instance.state === 'suspended'" class="muted tiny mb-2">
+                    No date set. The instance is already suspended.
+                  </div>
+                  <div v-else class="muted tiny mb-2">No date set - this instance is permanent.</div>
+
+                  <v-row dense>
+                    <v-col cols="7">
+                      <v-menu v-model="dateMenu" :close-on-content-click="false" offset-y>
+                        <template v-slot:activator="{ on }">
+                          <v-btn small block outlined v-on="on">
+                            <v-icon left small>mdi-calendar</v-icon>
+                            {{ selected.instance.suspendAt ? 'Change date' : 'Set date' }}
+                          </v-btn>
+                        </template>
+                        <v-date-picker :value="selected.instance.suspendAt" :min="today"
+                          @input="setDate(selected.instance, $event)"></v-date-picker>
+                      </v-menu>
+                    </v-col>
+                    <v-col cols="5">
+                      <v-btn small block outlined :disabled="!selected.instance.suspendAt"
+                        @click="clearDate(selected.instance)">Remove</v-btn>
+                    </v-col>
+                  </v-row>
+
+                  <div v-if="isProtected(selected.instance)" class="rule-hint mt-3">
+                    <v-icon x-small color="teal darken-2">mdi-lock</v-icon>
+                    Protected. This instance will not be suspended while a submission is open,
+                    even if the date passes.
+                  </div>
+                </div>
+
+                <div class="detail-block" v-if="selected.instance.state === 'suspended'">
+                  <v-btn small block outlined color="primary"
+                    @click="unsuspend(selected.instance)">
+                    <v-icon left small>mdi-restore</v-icon> Unsuspend now
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-tab-item>
+
+    <!-- ==================================================== INSTANCES -->
+    <v-tab-item>
+      <v-container fluid class="pa-5">
+        <v-card flat outlined class="mb-4">
+          <v-card-text class="pb-3">
+            <v-row dense align="center">
+              <v-col cols="12" md="4">
+                <v-text-field v-model="instSearch" dense outlined hide-details clearable
+                  label="Domain or instance ID" prepend-inner-icon="mdi-magnify"></v-text-field>
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-select v-model="instStateFilter" :items="instanceStateOptions" dense outlined
+                  hide-details clearable label="State"></v-select>
+              </v-col>
+              <v-col cols="12" md="5">
+                <div class="tiny muted">
+                  Out-of-process actions. Nothing here is tied to a submission.
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+
+        <v-card flat outlined>
+          <v-data-table :headers="instHeaders" :items="filteredInstances" :items-per-page="20"
+            item-key="id" dense>
+            <template v-slot:item.domain="{ item }">
+              <div class="domain">{{ item.domain }}</div>
+              <div class="tiny muted mono">ID {{ item.id }}</div>
+            </template>
+            <template v-slot:item.state="{ item }">
+              <v-chip x-small label dark :color="stateColor(item.state)">{{ item.state }}</v-chip>
+              <v-tooltip bottom v-if="isProtected(item)">
+                <template v-slot:activator="{ on }">
+                  <v-icon v-on="on" small color="teal darken-2" class="ml-1">mdi-lock</v-icon>
+                </template>
+                <span>Protected - not suspended while a submission is open</span>
+              </v-tooltip>
+            </template>
+            <template v-slot:item.suspend_at="{ item }">
+              <span v-if="item.suspendAt" class="mono" :class="{ 'date-past': isPast(item.suspendAt) }">
+                {{ item.suspendAt }}
+              </span>
+              <span v-else class="muted tiny">none</span>
+              <div v-if="item.suspendReason" class="tiny muted">{{ item.suspendReason }}</div>
+            </template>
+            <template v-slot:item.actions="{ item }">
+              <v-btn x-small text @click="openInstanceDialog(item)">Manage</v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-container>
+    </v-tab-item>
+  </v-tabs-items>
+  </v-main>
+
+  <!-- ==================================================== instance dialog -->
+  <v-dialog v-model="instDialog" max-width="520">
+    <v-card v-if="instTarget">
+      <v-card-title style="font-family:'Jost',sans-serif">
+        <div>
+          <div>{{ instTarget.domain }}</div>
+          <div class="tiny muted mono">{{ instTarget.id }}</div>
+        </div>
+      </v-card-title>
+      <v-card-text>
+        <div v-if="protectingSubmissionFor(instTarget)" class="rule-hint mb-4">
+          This instance is protected by a submission. Suspending it here overrides that.
+        </div>
+
+        <div class="detail-label">Current state</div>
+        <v-chip x-small label dark :color="stateColor(instTarget.state)" class="mb-4">
+          {{ instTarget.state }}
+        </v-chip>
+
+        <div class="detail-label">Reason</div>
+        <v-select v-model="instReason" :items="reasonOptions" dense outlined hide-details
+          class="mb-4"></v-select>
+
+        <div class="detail-label">Suspension due</div>
+        <v-row dense class="mb-2">
+          <v-col cols="7">
+            <v-menu v-model="instDateMenu" :close-on-content-click="false" offset-y>
+              <template v-slot:activator="{ on }">
+                <v-btn small block outlined v-on="on">
+                  <v-icon left small>mdi-calendar</v-icon>
+                  {{ instTarget.suspendAt || 'Set a date' }}
+                </v-btn>
+              </template>
+              <v-date-picker :value="instTarget.suspendAt" :min="today"
+                @input="setDate(instTarget, $event); instDateMenu = false"></v-date-picker>
+            </v-menu>
+          </v-col>
+          <v-col cols="5">
+            <v-btn small block outlined :disabled="!instTarget.suspendAt"
+              @click="clearDate(instTarget)">Remove date</v-btn>
+          </v-col>
+        </v-row>
+
+        <v-divider class="my-4"></v-divider>
+
+        <v-btn v-if="instTarget.state === 'live'" block color="error" depressed
+          @click="suspendNow(instTarget)">
+          <v-icon left small>mdi-close-octagon</v-icon> Suspend now
+        </v-btn>
+        <v-btn v-else-if="instTarget.state === 'suspended'" block color="primary" depressed
+          @click="unsuspend(instTarget)">
+          <v-icon left small>mdi-restore</v-icon> Unsuspend now
+        </v-btn>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="instDialog = false">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-snackbar v-model="snack" timeout="4000">{{ snackText }}</v-snackbar>
+</v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.js"></script>
+<script>
+const TODAY = '2026-10-19';
+
+function addDays(iso, n) {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function addMonths(iso, n) {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCMonth(d.getUTCMonth() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+const INSTANCES = [
+  { id: 1042, domain: 'sorbian-lexicon.wikibase.cloud', created: '2026-08-02', state: 'live',      suspendAt: '2026-11-02', suspendReason: 'expiry' },
+  { id: 871, domain: 'konzertarchiv.wikibase.cloud',   created: '2024-03-11', state: 'live',      suspendAt: '2026-12-31', suspendReason: 'expiry' },
+  { id: 1130, domain: 'test-migration-3.wikibase.cloud',created: '2026-07-19', state: 'suspended', suspendAt: null,         suspendReason: null, suspendedAt: '2026-10-19' },
+  { id: 644, domain: 'herbarium-nrw.wikibase.cloud',   created: '2023-11-28', state: 'live',      suspendAt: '2026-10-15', suspendReason: 'expiry' },
+  { id: 1201, domain: 'my-first-wiki-9.wikibase.cloud', created: '2026-07-30', state: 'suspended', suspendAt: null,         suspendReason: null, suspendedAt: '2026-10-30' },
+  { id: 955, domain: 'oral-histories-ke.wikibase.cloud',created:'2025-05-04', state: 'live',      suspendAt: '2027-09-11', suspendReason: 'expiry' },
+  { id: 1088, domain: 'stadtarchiv-jena.wikibase.cloud',created: '2026-06-15', state: 'live',      suspendAt: '2026-11-02', suspendReason: 'hp_violation' },
+  { id: 712, domain: 'linked-recipes.wikibase.cloud',  created: '2024-09-09', state: 'live',      suspendAt: '2026-12-31', suspendReason: 'expiry' },
+  { id: 1155, domain: 'crypto-airdrop-list.wikibase.cloud', created: '2026-08-21', state: 'suspended', suspendAt: null,     suspendReason: null, suspendedAt: '2026-10-05' },
+  { id: 503, domain: 'monument-register.wikibase.cloud',created: '2023-02-17', state: 'live',      suspendAt: null,         suspendReason: null },
+];
+
+const SUBMISSIONS = [
+  { id: 'sub-2041', instanceId: 1042, arrived: '2026-10-14', status: 'SUBMITTED', note: '', purpose: 'A lexicographic database of Upper and Lower Sorbian, built with the Sorbian Institute. Around 4,000 lexemes so far.' },
+  { id: 'sub-2038', instanceId: 871, arrived: '2026-10-12', status: 'SUBMITTED', note: '', purpose: 'Archive of concert programmes from independent venues in Leipzig, 1990 to present. Volunteer-run.' },
+  { id: 'sub-2036', instanceId: 1130, arrived: '2026-10-11', status: 'SUBMITTED', note: '', purpose: 'Testing an import pipeline before moving the real data across.' },
+  { id: 'sub-2030', instanceId: 644, arrived: '2026-10-06', status: 'IN_REVIEW', note: '', purpose: 'Digitised herbarium sheets from three North Rhine-Westphalia collections, with taxon and collector data.' },
+  { id: 'sub-2028', instanceId: 1088, arrived: '2026-10-05', status: 'IN_REVIEW', note: '', purpose: 'Municipal archive holdings register. Second attempt - we have removed the personal data flagged last time.' },
+  { id: 'sub-2019', instanceId: 1088, arrived: '2026-09-18', status: 'REJECTED',  note: 'Contains named personal records of living individuals with no stated legal basis. Resubmit once removed or a basis is documented.', purpose: 'Municipal archive holdings register.' },
+  { id: 'sub-2012', instanceId: 955, arrived: '2026-09-11', status: 'APPROVED',  note: 'Clear public-interest collection, well described, active editing community. Re-evaluate in a year.', purpose: 'Oral history interviews collected in Kenya, transcribed and indexed by theme and speaker.' },
+  { id: 'sub-2008', instanceId: 712, arrived: '2026-09-04', status: 'APPROVED',  note: 'Fits the policy. Small but genuine linked-data use case.', purpose: 'Structured recipe data linked to ingredient and technique vocabularies.' },
+  { id: 'sub-2003', instanceId: 1155, arrived: '2026-08-29', status: 'REJECTED',  note: 'Promotional link aggregation with no knowledge-base character. Suspended.', purpose: 'A list of upcoming token distributions.' },
+  { id: 'sub-1998', instanceId: 1201, arrived: '2026-08-20', status: 'CANCELLED', note: '', purpose: 'Trying things out.' },
+  { id: 'sub-1990', instanceId: 503, arrived: '2026-08-02', status: 'APPROVED',  note: 'Long-standing register maintained with the state heritage office. No re-evaluation needed.', purpose: 'Register of listed monuments with protection status and coordinates.' },
+];
+
+new Vue({
+  el: '#app',
+  vuetify: new Vuetify(),
+  data: {
+    tab: 0,
+    today: TODAY,
+    instances: JSON.parse(JSON.stringify(INSTANCES)),
+    submissions: JSON.parse(JSON.stringify(SUBMISSIONS)),
+
+    search: '', statusFilter: [], instanceFilter: null, quickFilter: 'all',
+    selected: null, draftNote: '', approveMode: 'clear', approveDate: null,
+    dateMenu: false, approveDateMenu: false,
+
+    instSearch: '', instStateFilter: null,
+    instDialog: false, instTarget: null, instReason: 'expiry', instDateMenu: false,
+
+    snack: false, snackText: '',
+
+    headers: [
+      { text: 'Arrived', value: 'arrived', width: 120 },
+      { text: 'Instance', value: 'domain' },
+      { text: 'Instance state', value: 'instance_state', width: 150, sortable: false },
+      { text: 'Submission', value: 'status', width: 130 },
+      { text: 'Suspension due', value: 'suspend_at', width: 150, sortable: false },
+    ],
+    instHeaders: [
+      { text: 'Instance', value: 'domain' },
+      { text: 'Created', value: 'created', width: 120 },
+      { text: 'State', value: 'state', width: 160 },
+      { text: 'Suspension due', value: 'suspend_at', width: 170, sortable: false },
+      { text: '', value: 'actions', width: 100, sortable: false, align: 'end' },
+    ],
+    statusOptions: [
+      { text: 'Submitted', value: 'SUBMITTED' },
+      { text: 'In review', value: 'IN_REVIEW' },
+      { text: 'Approved', value: 'APPROVED' },
+      { text: 'Rejected', value: 'REJECTED' },
+      { text: 'Cancelled', value: 'CANCELLED' },
+    ],
+    instanceStateOptions: [
+      { text: 'Live', value: 'live' },
+      { text: 'Suspended', value: 'suspended' },
+    ],
+    reasonOptions: [
+      { text: 'Expiry', value: 'expiry' },
+      { text: 'Terms of Use violation', value: 'tou_violation' },
+      { text: 'Hosting Policy violation', value: 'hp_violation' },
+    ],
+  },
+
+  computed: {
+    rows() {
+      return this.submissions.map(s => ({
+        ...s,
+        instance: this.instances.find(i => i.id === s.instanceId),
+      }));
+    },
+    filteredRows() {
+      let r = this.rows;
+      if (this.quickFilter === 'queue') r = r.filter(x => x.status === 'SUBMITTED');
+      if (this.quickFilter === 'mine') r = r.filter(x => x.status === 'IN_REVIEW');
+      if (this.quickFilter === 'closed') r = r.filter(x => this.isClosed(x.status));
+      if (this.statusFilter.length) r = r.filter(x => this.statusFilter.includes(x.status));
+      if (this.instanceFilter) r = r.filter(x => x.instance.state === this.instanceFilter);
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        r = r.filter(x => x.instance.domain.toLowerCase().includes(q) ||
+                          x.instance.id.toLowerCase().includes(q));
+      }
+      return r.slice().sort((a, b) => b.arrived.localeCompare(a.arrived));
+    },
+    filteredInstances() {
+      let r = this.instances;
+      if (this.instStateFilter) r = r.filter(i => i.state === this.instStateFilter);
+      if (this.instSearch) {
+        const q = this.instSearch.toLowerCase();
+        r = r.filter(i => i.domain.toLowerCase().includes(q) || i.id.toLowerCase().includes(q));
+      }
+      return r;
+    },
+    countOpen()     { return this.submissions.filter(s => s.status === 'SUBMITTED').length; },
+    countInReview() { return this.submissions.filter(s => s.status === 'IN_REVIEW').length; },
+    countClosed()   { return this.submissions.filter(s => this.isClosed(s.status)).length; },
+  },
+
+  methods: {
+    label(s) { return { SUBMITTED: 'Submitted', IN_REVIEW: 'In review', APPROVED: 'Approved',
+                        REJECTED: 'Rejected', CANCELLED: 'Cancelled' }[s]; },
+    statusColor(s) { return { SUBMITTED: 'blue-grey', IN_REVIEW: 'indigo', APPROVED: 'green darken-1',
+                              REJECTED: 'red darken-2', CANCELLED: 'grey' }[s]; },
+    stateColor(s) { return s === 'live' ? 'teal darken-1' : 'red darken-3'; },
+    isClosed(s) { return ['APPROVED', 'REJECTED', 'CANCELLED'].includes(s); },
+    // An instance is protected from suspension while it has a submission in a
+    // non-terminal state. APPROVED, REJECTED and CANCELLED are all terminal.
+    isProtecting(s) { return !this.isClosed(s); },
+    isPast(d) { return !!d && d <= TODAY; },
+    rowClass(item) { return this.selected && this.selected.id === item.id ? 'row-selected' : ''; },
+
+    daysAgo(d) {
+      const n = Math.round((new Date(TODAY) - new Date(d)) / 86400000);
+      return n === 0 ? 'today' : n + ' days ago';
+    },
+    protectingSubmissionFor(inst) {
+      return this.submissions.find(s => s.instanceId === inst.id && this.isProtecting(s.status));
+    },
+    // A live instance is protected while any submission for it is in a non-terminal state.
+    isProtected(inst) {
+      return inst.state === 'live' && !!this.protectingSubmissionFor(inst);
+    },
+    priorSubmissions(row) {
+      return this.submissions
+        .filter(s => s.instanceId === row.instanceId && s.id !== row.id)
+        .sort((a, b) => b.arrived.localeCompare(a.arrived));
+    },
+    defaultRejectDate(inst) {
+      const twoWeeks = addDays(TODAY, 14);
+      const floor = addMonths(inst.created, 3);
+      return twoWeeks > floor ? twoWeeks : floor;
+    },
+
+    resetFilters() {
+      this.search = ''; this.statusFilter = []; this.instanceFilter = null; this.quickFilter = 'all';
+    },
+    select(row) {
+      this.selected = row;
+      this.draftNote = row.note || '';
+      this.approveMode = 'clear';
+      this.approveDate = addMonths(TODAY, 12);
+    },
+    toast(t) { this.snackText = t; this.snack = true; },
+
+    pickUp(row) {
+      const s = this.submissions.find(x => x.id === row.id);
+      s.status = 'IN_REVIEW';
+      if (row.instance.state === 'suspended') {
+        row.instance.state = 'live';
+        row.instance.suspendedAt = null;
+        this.toast('Picked up. ' + row.instance.domain + ' was unsuspended for the review.');
+      } else {
+        this.toast('Picked up for review.');
+      }
+      this.select(this.rows.find(x => x.id === row.id));
+    },
+    approve(row) {
+      const s = this.submissions.find(x => x.id === row.id);
+      s.status = 'APPROVED';
+      s.note = this.draftNote;
+      if (this.approveMode === 'clear') {
+        row.instance.suspendAt = null;
+        row.instance.suspendReason = null;
+        this.toast('Approved. Suspension due date removed.');
+      } else {
+        row.instance.suspendAt = this.approveDate;
+        row.instance.suspendReason = 'expiry';
+        this.toast('Approved. Next review due ' + this.approveDate + '.');
+      }
+      this.select(this.rows.find(x => x.id === row.id));
+    },
+    reject(row) {
+      const s = this.submissions.find(x => x.id === row.id);
+      s.status = 'REJECTED';
+      s.note = this.draftNote;
+      row.instance.suspendAt = this.defaultRejectDate(row.instance);
+      row.instance.suspendReason = 'hp_violation';
+      this.toast('Rejected. Suspension scheduled for ' + row.instance.suspendAt + '.');
+      this.select(this.rows.find(x => x.id === row.id));
+    },
+
+    setDate(inst, d) {
+      inst.suspendAt = d;
+      if (!inst.suspendReason) inst.suspendReason = 'expiry';
+      this.dateMenu = false;
+      this.toast('Suspension due ' + d + '.');
+    },
+    clearDate(inst) {
+      inst.suspendAt = null;
+      inst.suspendReason = null;
+      this.toast('Suspension due date removed. The instance is permanent.');
+    },
+    unsuspend(inst) {
+      inst.state = 'live';
+      inst.suspendedAt = null;
+      this.toast(inst.domain + ' is live again.');
+    },
+    suspendNow(inst) {
+      inst.state = 'suspended';
+      inst.suspendedAt = TODAY;
+      inst.suspendAt = null;
+      inst.suspendReason = this.instReason;
+      this.toast(inst.domain + ' is suspended.');
+    },
+    openInstanceDialog(inst) {
+      this.instTarget = inst;
+      this.instReason = inst.suspendReason || 'expiry';
+      this.instDialog = true;
+    },
+  },
+});
+</script>
+</body>
+</html>

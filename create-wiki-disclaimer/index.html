@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create a wiki - Hosting Policy notice - Wikibase Cloud Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.css">
+
+  <style>
+    html, body, #app { height: 100%; margin: 0; }
+    body { font-family: Roboto, sans-serif; }
+
+    .v-application { height: 100vh !important; }
+    .v-application--wrap { min-height: 100vh; display: flex; flex-direction: column; }
+
+    .prototype-banner {
+      flex: 0 0 28px;
+      height: 28px;
+      background: #37474f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      font-family: 'Jost', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .stage {
+      flex: 1;
+      overflow-y: auto;
+      background: #eceff1;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px 48px;
+    }
+
+    /* ---------- Dialog ---------- */
+    .dialog {
+      width: 420px;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 6px 22px rgba(0,0,0,.18);
+      align-self: flex-start;
+      overflow: hidden;
+    }
+    .dialog-title {
+      background: #1976d2;
+      color: #fff;
+      font-size: 19px;
+      font-weight: 500;
+      padding: 16px 22px;
+    }
+    .dialog-body { padding: 20px 22px 8px; }
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 10px 18px 18px;
+    }
+
+    .q-lead {
+      font-size: 14px;
+      font-weight: 700;
+      color: #616161;
+      line-height: 1.45;
+      margin-bottom: 4px;
+    }
+
+    /* tighten Vuetify controls to match the real dialog density */
+    .dialog .v-input--radio-group { margin-top: 4px; }
+    .dialog .v-input--selection-controls { margin-top: 0; padding-top: 0; }
+    .dialog .v-radio { margin-bottom: 8px; align-items: flex-start; }
+    .dialog .v-radio .v-input--selection-controls__input { margin-top: -2px; }
+    .dialog .v-label { font-size: 14px; color: #616161; line-height: 1.4; }
+    .dialog .v-messages { min-height: 0; }
+    .dialog .v-radio .v-label { display: flex; align-items: baseline; width: 100%; }
+    .dialog .other-field { max-width: 250px; margin: -12px 0 0 10px; padding-top: 0; }
+    .dialog .other-field .v-text-field__details { margin-bottom: 0; }
+    .dialog .other-label { flex: 0 0 auto; font-size: 14px; color: #616161; }
+
+    /* ---------- Hosting Policy notice ---------- */
+    .hp-notice {
+      background: #f4f7f9;
+      border-left: 3px solid #1976d2;
+      border-radius: 0 3px 3px 0;
+      padding: 14px 16px 12px;
+      margin: 18px 0 6px;
+    }
+    .hp-notice h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #37474f;
+      line-height: 1.45;
+      margin: 0 0 8px;
+    }
+    .hp-notice p {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: #4a5a63;
+      margin: 0 0 10px;
+    }
+    .hp-notice p:last-child { margin-bottom: 0; }
+    .hp-notice a { color: #1976d2; }
+
+    .hp-confirm { margin: 6px 0 0; }
+    .hp-confirm .v-label { font-size: 13.5px; color: #37474f; line-height: 1.45; }
+    .required-mark { color: #c62828; font-weight: 700; }
+
+    /* ---------- Terms of Use ---------- */
+    .tou { margin: 18px 0 4px; }
+    .tou h4 { font-size: 14px; font-weight: 700; color: #616161; margin: 0 0 4px; }
+    .tou p { font-size: 13.5px; color: #757575; margin: 0; }
+
+    .v-btn { font-family: Roboto, sans-serif; }
+
+    /* ---------- Confirmation state ---------- */
+    .created-card {
+      width: 420px;
+      align-self: flex-start;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 6px 22px rgba(0,0,0,.18);
+      padding: 26px 24px 20px;
+      text-align: center;
+    }
+    .created-card h3 { font-family: 'Jost', sans-serif; font-size: 20px; color: #37474f; margin: 10px 0 6px; }
+    .created-card p { font-size: 14px; color: #607d8b; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <v-app>
+    <div class="prototype-banner">Prototype &mdash; Create a wiki: hosting policy notice</div>
+
+    <div class="stage">
+
+      <!-- ============ Step 3 of the creation dialog ============ -->
+      <div class="dialog" v-if="!created">
+        <div class="dialog-title">Create a wiki</div>
+
+        <div class="dialog-body">
+
+          <div class="q-lead">How long do you plan to use this Wikibase?</div>
+
+          <v-radio-group v-model="retention" hide-details class="mb-1">
+            <v-radio
+              value="permanent"
+              label="I would prefer to keep it on a permanent basis"></v-radio>
+            <v-radio
+              value="temporary"
+              label="It is temporary/disposable. I will no longer need it after it served its purpose"></v-radio>
+            <v-radio value="other">
+              <template v-slot:label>
+                <span class="other-label">Other:</span>
+                <v-text-field
+                  v-model="retentionOther"
+                  class="other-field"
+                  counter="200"
+                  maxlength="200"
+                  :disabled="retention !== 'other'"
+                  hide-details="auto"
+                  dense></v-text-field>
+              </template>
+            </v-radio>
+            <v-radio value="later" label="I will decide later"></v-radio>
+          </v-radio-group>
+
+          <!-- ---------- Hosting Policy notice ---------- -->
+          <div class="hp-notice">
+            <h4>All Wikibases on our platform are temporary by default.</h4>
+
+            <p>
+              Whatever you answered above, this Wikibase will go offline in 3 months, unless it has
+              been approved to stay.
+            </p>
+
+            <p>
+              Once you're confident you want to keep this Wikibase longer, submit it for review.
+            </p>
+
+            <p>
+              Some uses can't be approved for a longer stay at all &mdash; for example primarily
+              commercial or promotional use, or content under a license that isn't free and open.
+              The full conditions are in the <a href="#" @click.prevent>Hosting Policy</a>. Make
+              sure your use case would be approved before you invest time in building it.
+            </p>
+          </div>
+
+          <v-checkbox
+            v-model="hpUnderstood"
+            class="hp-confirm"
+            hide-details>
+            <template v-slot:label>
+              <span>
+                I understand that this Wikibase will go offline on
+                <strong>{{ offlineDate }}</strong> unless it is submitted for review and approved
+                to stay.
+                <span class="required-mark">*</span>
+              </span>
+            </template>
+          </v-checkbox>
+
+          <!-- ---------- Terms of Use ---------- -->
+          <div class="tou">
+            <h4>Terms of Use</h4>
+            <p>
+              Previously accepted <a href="#" @click.prevent>Terms of Use</a> still apply.
+            </p>
+          </div>
+        </div>
+
+        <div class="dialog-actions">
+          <v-btn text color="grey darken-1" small>&lt; Previous</v-btn>
+          <v-btn
+            color="primary"
+            depressed
+            small
+            :disabled="!hpUnderstood"
+            @click="create">Create wiki</v-btn>
+        </div>
+      </div>
+
+      <!-- ============ After creation ============ -->
+      <div class="created-card" v-else>
+        <v-icon color="primary" size="44">mdi-check-circle-outline</v-icon>
+        <h3>Wiki created</h3>
+        <p>
+          <strong>antontest.wikibase.cloud</strong> is scheduled to go offline on
+          <strong>{{ offlineDate }}</strong>.
+        </p>
+        <p>
+          You confirmed you understood this on {{ todayLabel }}.
+        </p>
+        <v-btn text color="primary" small class="mt-2" @click="reset">
+          <v-icon left small>mdi-restart</v-icon>Start over
+        </v-btn>
+      </div>
+
+    </div>
+  </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.js"></script>
+<script>
+  function formatLong(d) {
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify({
+      theme: { themes: { light: { primary: '#1976d2' } } }
+    }),
+    data: {
+      retention: null,
+      retentionOther: '',
+      hpUnderstood: false,
+      created: false,
+    },
+    computed: {
+      // The date the notice and the confirmation checkbox both refer to:
+      // three months from today, since the instance does not exist yet.
+      offlineDate() {
+        const d = new Date();
+        d.setMonth(d.getMonth() + 3);
+        return formatLong(d);
+      },
+      todayLabel() {
+        return formatLong(new Date());
+      },
+    },
+    methods: {
+      create() { this.created = true; },
+      reset() {
+        this.created = false;
+        this.hpUnderstood = false;
+        this.retention = null;
+        this.retentionOther = '';
+      },
+    },
+  });
+</script>
+</body>
+</html>
