@@ -35,6 +35,12 @@ that apply to both have to be made twice.
 
 Change these only deliberately - each one came out of a round of review.
 
+**Wording, both variants**
+
+- Never say "suspended" in copy the manager reads. It is the internal term for what happens
+  to an instance, and it belongs in the admin prototype, not here. Say what the manager
+  gets instead: "Your instance will stay online while we are reviewing your submission."
+
 **Left pane, the questionnaire**
 
 - Five answers are mandatory: the reuse question, the intended purpose, contributors,

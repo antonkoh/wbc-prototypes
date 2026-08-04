@@ -358,8 +358,8 @@
                 <span class="sub-date">Submitted {{ submission.date }}</span>
               </div>
               <div class="sub-meta">
-                Your instance will not be suspended while this submission is open. We will contact
-                you about the outcome.
+                Your instance will stay online while we are reviewing your submission. We will
+                contact you about the outcome.
               </div>
             </div>
           </v-card-text>
@@ -415,7 +415,7 @@ new Vue({
   methods: {
     submitApplication() {
       this.submission = { date: today() };
-      this.toastMessage = 'Submitted for review. Your instance will not be suspended while the review is open.';
+      this.toastMessage = 'Submitted for review. Your instance will stay online while we are reviewing your submission.';
       this.toast = true;
     },
     resetPrototype() {
