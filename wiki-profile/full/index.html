@@ -546,7 +546,6 @@
               <template v-else>{{ answeredCount }} of {{ requiredCount }} required answers</template>
             </span>
             <v-spacer></v-spacer>
-            <v-btn text small @click="resetForm">Reset</v-btn>
             <v-btn color="primary" depressed small :disabled="!profileComplete || profileSaved"
               @click="saveProfile">Save</v-btn>
           </v-card-actions>
@@ -828,20 +827,6 @@ new Vue({
       this.toastMessage = 'Wiki profile saved. You can now submit this instance for review.';
       this.toast = true;
     },
-    // Clears the answers only. Consent given and saved once cannot be withdrawn from the
-    // UI, so a locked consent survives this - withdrawal is out of band, in writing.
-    resetForm() {
-      const keepConsent = this.consentLocked;
-      Object.assign(this.$data, JSON.parse(JSON.stringify(BLANK)));
-      this.gdprConsent = keepConsent;
-      this.consentLocked = keepConsent;
-      this.$nextTick(() => { this.profileSaved = false; });
-      this.toastMessage = keepConsent
-        ? 'Answers cleared. Your consent stays on record.'
-        : 'Form cleared.';
-      this.toast = true;
-    },
-
     // Demo scaffolding: puts the whole prototype back to how it opens, including the
     // consent lock and the seeded submissions.
     resetPrototype() {
