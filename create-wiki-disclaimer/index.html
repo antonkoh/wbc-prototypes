@@ -120,19 +120,6 @@
     .tou p { font-size: 13.5px; color: #757575; margin: 0; }
 
     .v-btn { font-family: Roboto, sans-serif; }
-
-    /* ---------- Confirmation state ---------- */
-    .created-card {
-      width: 420px;
-      align-self: flex-start;
-      background: #fff;
-      border-radius: 4px;
-      box-shadow: 0 6px 22px rgba(0,0,0,.18);
-      padding: 26px 24px 20px;
-      text-align: center;
-    }
-    .created-card h3 { font-family: 'Jost', sans-serif; font-size: 20px; color: #37474f; margin: 10px 0 6px; }
-    .created-card p { font-size: 14px; color: #607d8b; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -143,7 +130,7 @@
     <div class="stage">
 
       <!-- ============ Step 3 of the creation dialog ============ -->
-      <div class="dialog" v-if="!created">
+      <div class="dialog">
         <div class="dialog-title">Create a wiki</div>
 
         <div class="dialog-body">
@@ -219,29 +206,13 @@
 
         <div class="dialog-actions">
           <v-btn text color="grey darken-1" small>&lt; Previous</v-btn>
+          <!-- Deliberately does nothing. This prototype is the dialog step only. -->
           <v-btn
             color="primary"
             depressed
             small
-            :disabled="!hpUnderstood"
-            @click="create">Create wiki</v-btn>
+            :disabled="!hpUnderstood">Create wiki</v-btn>
         </div>
-      </div>
-
-      <!-- ============ After creation ============ -->
-      <div class="created-card" v-else>
-        <v-icon color="primary" size="44">mdi-check-circle-outline</v-icon>
-        <h3>Wiki created</h3>
-        <p>
-          <strong>antontest.wikibase.cloud</strong> is scheduled to go offline on
-          <strong>{{ offlineDate }}</strong>.
-        </p>
-        <p>
-          You confirmed you understood this on {{ todayLabel }}.
-        </p>
-        <v-btn text color="primary" small class="mt-2" @click="reset">
-          <v-icon left small>mdi-restart</v-icon>Start over
-        </v-btn>
       </div>
 
     </div>
@@ -264,7 +235,6 @@
       retention: null,
       retentionOther: '',
       hpUnderstood: false,
-      created: false,
     },
     computed: {
       // The date the notice and the confirmation checkbox both refer to:
@@ -273,18 +243,6 @@
         const d = new Date();
         d.setMonth(d.getMonth() + 3);
         return formatLong(d);
-      },
-      todayLabel() {
-        return formatLong(new Date());
-      },
-    },
-    methods: {
-      create() { this.created = true; },
-      reset() {
-        this.created = false;
-        this.hpUnderstood = false;
-        this.retention = null;
-        this.retentionOther = '';
       },
     },
   });
