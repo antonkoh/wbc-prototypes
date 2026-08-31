@@ -196,6 +196,10 @@
     .check-lead:first-child { margin-top: 0; }
     .external-link .v-icon { vertical-align: baseline; margin-left: 2px; }
 
+    /* ---------- optional message to the committee ---------- */
+    .extra-info textarea { font-size: 13.5px; line-height: 1.55; }
+    .extra-info .v-counter { font-size: 12px; }
+
     /* ---------- submissions ---------- */
     .sub-item {
       border: 1px solid #e0e0e0;
@@ -337,6 +341,19 @@
                 </template>
               </v-checkbox>
             </div>
+
+            <v-textarea
+              v-model="extraInfo"
+              outlined
+              dense
+              rows="3"
+              auto-grow
+              maxlength="1000"
+              counter="1000"
+              hide-details="auto"
+              class="extra-info mt-5"
+              placeholder="Feel free to pass on any additional information to the review committee to support your submission."
+            ></v-textarea>
           </v-card-text>
 
           <v-divider></v-divider>
@@ -386,12 +403,14 @@ new Vue({
   el: '#app',
   vuetify: new Vuetify(),
   data: () => ({
-    questionnaireUrl: 'https://example.org/wikibase-cloud-review-questionnaire',
+    questionnaireUrl: 'https://wikimedia.sslsurvey.de/WBC-Hosting-Policy-Review-Submission/?<wiki_id>',
 
     checkQuestionnaire: false,
     checkLicense: false,
     checkDisclaimer: false,
     checkCommitment: false,
+
+    extraInfo: '',
 
     submission: null,
 
@@ -424,6 +443,7 @@ new Vue({
       this.checkLicense = false;
       this.checkDisclaimer = false;
       this.checkCommitment = false;
+      this.extraInfo = '';
     },
   },
 });

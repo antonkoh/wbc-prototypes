@@ -55,15 +55,37 @@ now offers Save alone.
 
 **Left pane, the questionnaire**
 
-- Five answers are mandatory: the reuse question, the intended purpose, contributors,
-  the knowledge-equity question, and the GDPR consent checkbox. `requiredCount: 5`.
-- The dataset question and the intended-audience question are **optional**, and carry no
-  asterisk. Both open with a bolded condition ("If the Wikibase is intended to host a real
-  dataset...") because they only apply to some instances.
-- The profile cannot be saved until all five mandatory answers are given. Until then the
+- The intended-purpose and knowledge-equity questions keep their lead paragraphs above the field,
+  but their examples live **inside the field as its placeholder**, one per line, under "Here are
+  examples of the information we are looking for:". They vanish the moment the manager types,
+  which is the point - they are a prompt, not standing instructions.
+- All question fields are 13px with `line-height: 1.55` (`.q-block textarea`), matching `.q-sub`
+  around them. The rule is on the textarea, not on `::placeholder`, so prompt and typed answer
+  share it - Vuetify's default 16px/28px left the prompt lines looking double-spaced.
+- The two fields carrying examples get their height from `min-height` (`.purpose-field` 224px,
+  `.equity-field` 164px), sized to the prompt plus one spare line at the narrowest width the
+  two-pane layout reaches; `rows` stays at 4 like the others. `rows` alone was not reliable -
+  auto-grow recomputes the height and lands a few pixels short. Auto-grow still works above the
+  floor. If the example text changes, re-measure.
+- The contributors question still carries its two examples as `<ul class="q-examples">` above the
+  field. It was left alone deliberately; only purpose and knowledge equity moved.
+- Four answers are mandatory: the reuse question, the intended purpose, contributors, and
+  the GDPR consent checkbox. `requiredCount: 4`.
+- The dataset question, the intended-audience question and the knowledge-equity question
+  are **optional**, and carry no asterisk. The first two open with a bolded condition ("If
+  the Wikibase is intended to host a real dataset...") because they only apply to some
+  instances.
+- The knowledge-equity question is a single optional free-text field asking whether the
+  Wikibase represents knowledge or a community facing barriers to inclusion, with three
+  examples of what the committee is looking for. It replaced an earlier yes/no/unsure radio
+  group plus conditional follow-up, which was mandatory.
+- The profile cannot be saved until all four mandatory answers are given. Until then the
   footer counts what is missing rather than showing an error.
 - The reuse question is kept verbatim from the `reuse/` prototype, including its long
   explanatory text and the bolded stability sentence in the first option.
+- The GDPR consent covers processing "for the purpose of **reviewing** my Wikibase Cloud
+  instance" - not creating it. The profile is filled out for the review committee, and the
+  instance already exists by then.
 - The GDPR consent checkbox locks once the profile has been saved with consent given
   (`consentLocked`). It cannot be unticked from the UI. Withdrawal is out of band, in
   writing, per the fine print underneath. An earlier version modelled withdrawal in the UI
@@ -101,6 +123,16 @@ the "any further questions" section from the pilot questionnaire are all exclude
   stated in the lead text, with an external-link icon on the link.
 - The other three confirmations (licensing, project disclaimer, manager commitment) are
   unchanged from the full variant.
+- Below the four confirmations sits an **optional free-text field**. Its prompt - "Feel free to
+  pass on any additional information to the review committee to support your submission." - is the
+  field's own `placeholder`, not a label above it, matching how the live survey renders its
+  optional questions. It is A7 in
+  `applicant-questionnaire.md`, moved out of the external survey and into the submission itself.
+  It carries no asterisk and does not gate the submit button. Capped at **1,000 characters** with
+  a live counter: A7 maps to no grading criterion, so the limit keeps it a note rather than a
+  second route for the case that belongs in the graded questions. The cap is `maxlength`, so the
+  field stops accepting input - it never truncates a message the manager thinks was sent.
+- The MVP variant only. The full variant does not have this field yet.
 - A submission either exists or it does not. No states beyond `SUBMITTED`, no history, no
   cancelling, and the card is titled "Your submission", singular.
 - The submit card and the submission card are **mutually exclusive** - exactly one is on
@@ -110,8 +142,12 @@ the "any further questions" section from the pilot questionnaire are all exclude
 - Since there is no cancelling, a "Reset prototype" button sits in the top-right of the
   prototype banner so the flow can be demoed twice without a page reload. It is demo
   scaffolding, outside the simulated product UI on purpose.
-- The questionnaire link points at `https://example.org/...` - a placeholder. Swap it for
-  the real form URL before showing this to anyone outside the team.
+- The questionnaire link points at the real survey,
+  `https://wikimedia.sslsurvey.de/WBC-Hosting-Policy-Review-Submission/?<wiki_id>`. The
+  `<wiki_id>` stays literal in the prototype - the platform would substitute the instance id
+  so the committee knows which Wikibase an answer belongs to.
+- A free-text field under the confirmations lets the manager pass additional information to
+  the review committee. Optional, capped at 1000 characters.
 
 ## Stack
 
@@ -119,3 +155,7 @@ Vue 2.7 + Vuetify 2.6 from CDN, single self-contained `index.html` plus `assets/
 
 Watch out for the in-DOM template gotcha: HTML lowercases attribute names, so a
 `v-slot:item.camelCase` never matches its column. Use snake_case header values.
+
+Second gotcha, found the hard way: never set `line-height` inside a `::placeholder` rule on an
+`auto-grow` textarea. It feeds back into Vuetify's height measurement and the field grows to
+thousands of pixels on load. `font-size` alone is safe.
