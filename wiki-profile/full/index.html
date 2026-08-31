@@ -192,6 +192,18 @@
     }
     .q-examples li { margin-bottom: 5px; }
 
+    /* Question fields match the explanatory text around them, prompt and answer alike.
+       Set line-height on the textarea, never inside a ::placeholder rule - there it feeds back
+       into Vuetify's auto-grow measurement and the field runs away to thousands of pixels. */
+    .q-block textarea {
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    /* the two fields whose placeholder carries the examples need room for all of it */
+    .purpose-field textarea { min-height: 224px; }
+    .equity-field textarea { min-height: 164px; }
+
     .reuse-option {
       border: 1px solid #e0e0e0;
       border-radius: 4px;
@@ -382,16 +394,8 @@
                 Please describe how you intend to use this Wikibase in more detail (separate
                 questions about the dataset, intended audience and contributors will follow).
               </div>
-              <div class="q-sub">Here are examples of the information we are looking for:</div>
-              <ul class="q-examples">
-                <li>I would like to publish a dataset, so I could build an application on top of it.</li>
-                <li>My community would like to collaboratively maintain a dataset on a topic of our interest.</li>
-                <li>I am teaching how to use Wikibase to a group of students and plan to use this instance to showcase its functionality.</li>
-                <li>I am refining a dataset before importing it into Wikidata. It can be deleted once I'm done.</li>
-                <li>I am building a tool for data import into Wikibase and using this Wikibase as an experimentation ground.</li>
-              </ul>
               <v-textarea v-model="purpose" outlined auto-grow rows="4" hide-details
-                placeholder="Describe the purpose of this Wikibase"></v-textarea>
+                class="purpose-field" :placeholder="purposePlaceholder"></v-textarea>
             </div>
 
             <v-divider class="my-5"></v-divider>
@@ -467,47 +471,25 @@
 
             <v-divider class="my-5"></v-divider>
 
-            <!-- 6. knowledge equity -->
+            <!-- 6. knowledge equity, optional free text -->
             <div class="q-block">
               <div class="q-lead">
-                Contribution to knowledge equity<span class="required-mark">*</span>
+                Knowledge Equity
               </div>
               <div class="q-sub">
-                We want to support knowledge equity in the Wikibase ecosystem and to understand who
-                currently sees their Wikibase contributing towards it.
+                Does this Wikibase represent knowledge, a community, or a set of perspectives that
+                face barriers to being included in mainstream knowledge platforms or other
+                institutions? If so, describe the community or knowledge domain, and the specific
+                barriers - social, political, cultural, or institutional - that have kept it
+                underrepresented or excluded.
               </div>
-              <div class="q-sub">
-                Do you believe that this Wikibase contributes positively to knowledge equity in the
-                Wikibase ecosystem in any way?
-              </div>
-              <v-radio-group v-model="equity" hide-details class="mt-0" dense>
-                <v-radio value="yes" label="Yes, I believe it does"></v-radio>
-                <v-radio value="no" label="No, I don't believe it does"></v-radio>
-                <v-radio value="unsure" label="I'm not sure"></v-radio>
-                <v-radio value="no-say" label="I prefer not to say"></v-radio>
-              </v-radio-group>
+              <v-textarea v-model="equity" outlined auto-grow rows="4" hide-details
+                class="equity-field" :placeholder="equityPlaceholder"></v-textarea>
             </div>
-
-            <!-- 7. equity free text, only when yes or unsure -->
-            <template v-if="equity === 'yes' || equity === 'unsure'">
-              <v-divider class="my-5"></v-divider>
-              <div class="q-block">
-                <div class="q-lead">
-                  If you'd like, please tell us in what way(s) it contributes to knowledge equity.
-                  <span class="optional-tag">optional</span>
-                </div>
-                <div class="q-sub">
-                  For example, through the knowledge it contributes and/or the people holding and
-                  sharing it.
-                </div>
-                <v-textarea v-model="equityDetail" outlined auto-grow rows="3" hide-details
-                  placeholder="Tell us more"></v-textarea>
-              </div>
-            </template>
 
             <v-divider class="my-5"></v-divider>
 
-            <!-- 8. GDPR consent -->
+            <!-- 7. GDPR consent -->
             <div class="q-block">
               <div class="privacy-note">
                 &#9888;&#65039; Please avoid sharing any personal or sensitive information. This
@@ -522,7 +504,7 @@
                     <span>
                       Insofar as I voluntarily provide information here regarding special categories
                       of personal data as defined in art. 9 of the GDPR, I consent to the collection
-                      and processing of this data for the purpose of creating a Wikibase Cloud
+                      and processing of this data for the purpose of reviewing my Wikibase Cloud
                       instance.<span class="required-mark">*</span>
                     </span>
                   </template>
@@ -695,14 +677,29 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.js"></script>
 <script>
+const PURPOSE_PLACEHOLDER = [
+  'Here are examples of the information we are looking for:',
+  '- I would like to publish a dataset, so I could build an application on top of it.',
+  '- My community would like to collaboratively maintain a dataset on a topic of our interest.',
+  '- I am teaching how to use Wikibase to a group of students and plan to use this instance to showcase its functionality.',
+  '- I am refining a dataset before importing it into Wikidata. It can be deleted once I’m done.',
+  '- I am building a tool for data import into Wikibase and using this Wikibase as an experimentation ground.',
+].join('\n');
+
+const EQUITY_PLACEHOLDER = [
+  'Here are examples of the information we are looking for:',
+  '- Knowledge held by a community that has experienced racism, colonization, or other exclusion, and is rarely documented in existing reference works.',
+  '- A minority language, oral tradition, or indigenous knowledge system that existing institutions have not documented or preserved.',
+  '- Perspectives or histories that existing institutions (academia, museums, encyclopedias) have historically excluded, minimized, or misrepresented.',
+].join('\n');
+
 const BLANK = {
   reuseChoice: null,
   purpose: '',
   dataset: '',
   audience: '',
   contributors: '',
-  equity: null,
-  equityDetail: '',
+  equity: '',
   gdprConsent: false,
 };
 
@@ -735,6 +732,9 @@ new Vue({
   el: '#app',
   vuetify: new Vuetify(),
   data: () => Object.assign({}, BLANK, {
+    purposePlaceholder: PURPOSE_PLACEHOLDER,
+    equityPlaceholder: EQUITY_PLACEHOLDER,
+
     profileSaved: false,
     consentLocked: false,
 
@@ -744,7 +744,7 @@ new Vue({
 
     toast: false,
     toastMessage: '',
-    requiredCount: 5,
+    requiredCount: 4,
     nextId: 3,
 
     submissions: seededSubmissions(),
@@ -779,7 +779,6 @@ new Vue({
         this.reuseChoice,
         this.purpose.trim(),
         this.contributors.trim(),
-        this.equity,
         this.gdprConsent,
       ].filter(Boolean).length;
     },
