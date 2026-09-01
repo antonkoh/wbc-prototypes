@@ -27,6 +27,12 @@ Built to review the copy, not the visual design.
   and nothing beyond it has been designed. Do not add a success screen, a confirmation
   state, or any other follow-on screen here - inventing screens nobody asked for confuses
   the team about what is actually decided.
+- **No "Terms of Use" heading at the bottom.** The closing line covers both documents in one
+  sentence - "Previously accepted terms of use and hosting policy still apply." - so a heading
+  naming only one of them would be wrong, and a heading naming both would be longer than the
+  sentence it introduces.
+- All three policy links point at the real pages: `https://www.wikibase.cloud/terms-of-use` and
+  `https://www.wikibase.cloud/hosting-policy`. They open in a new tab so the dialog state survives.
 - The third paragraph names concrete disqualifiers (commercial or promotional use,
   non-free licence) and links to the policy. Kept to a few examples on purpose - the
   policy stays the single source of truth and the list must not drift from it.
