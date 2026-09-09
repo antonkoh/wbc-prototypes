@@ -41,7 +41,9 @@ Built to review the copy, not the visual design.
   your use case would be approved before you invest time in building it" - which promises
   something the reader cannot get, since the only way to know is to submit. The ask is now
   "Check them ... it's worth knowing early if your use case clearly won't qualify": read
-  the policy, look for an obvious contradiction, no implied guarantee.
+  the policy, look for an obvious contradiction, no implied guarantee. It says "building
+  anything", not "building it" - with a use case and a set of conditions both in the
+  sentence, a bare "it" has two plausible antecedents.
 
 ## Known issue
 
