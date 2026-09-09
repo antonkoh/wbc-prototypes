@@ -37,6 +37,11 @@ Built to review the copy, not the visual design.
 - The third paragraph names concrete disqualifiers (commercial or promotional use,
   non-free licence) and links to the policy. Kept to a few examples on purpose - the
   policy stays the single source of truth and the list must not drift from it.
+- **It asks for a sanity check, not certainty.** The paragraph used to close with "Make sure
+  your use case would be approved before you invest time in building it" - which promises
+  something the reader cannot get, since the only way to know is to submit. The ask is now
+  "Check them ... it's worth knowing early if your use case clearly won't qualify": read
+  the policy, look for an obvious contradiction, no implied guarantee.
 
 ## Known issue
 
