@@ -66,25 +66,10 @@
       padding: 10px 18px 18px;
     }
 
-    .q-lead {
-      font-size: 14px;
-      font-weight: 700;
-      color: #616161;
-      line-height: 1.45;
-      margin-bottom: 4px;
-    }
-
     /* tighten Vuetify controls to match the real dialog density */
-    .dialog .v-input--radio-group { margin-top: 4px; }
     .dialog .v-input--selection-controls { margin-top: 0; padding-top: 0; }
-    .dialog .v-radio { margin-bottom: 8px; align-items: flex-start; }
-    .dialog .v-radio .v-input--selection-controls__input { margin-top: -2px; }
     .dialog .v-label { font-size: 14px; color: #616161; line-height: 1.4; }
     .dialog .v-messages { min-height: 0; }
-    .dialog .v-radio .v-label { display: flex; align-items: baseline; width: 100%; }
-    .dialog .other-field { max-width: 250px; margin: -12px 0 0 10px; padding-top: 0; }
-    .dialog .other-field .v-text-field__details { margin-bottom: 0; }
-    .dialog .other-label { flex: 0 0 auto; font-size: 14px; color: #616161; }
 
     /* ---------- Hosting Policy notice ---------- */
     .hp-notice {
@@ -92,7 +77,7 @@
       border-left: 3px solid #1976d2;
       border-radius: 0 3px 3px 0;
       padding: 14px 16px 12px;
-      margin: 18px 0 6px;
+      margin: 2px 0 6px;
     }
     .hp-notice h4 {
       font-size: 14px;
@@ -135,48 +120,19 @@
 
         <div class="dialog-body">
 
-          <div class="q-lead">How long do you plan to use this Wikibase?</div>
-
-          <v-radio-group v-model="retention" hide-details class="mb-1">
-            <v-radio
-              value="permanent"
-              label="I would prefer to keep it on a permanent basis"></v-radio>
-            <v-radio
-              value="temporary"
-              label="It is temporary/disposable. I will no longer need it after it served its purpose"></v-radio>
-            <v-radio value="other">
-              <template v-slot:label>
-                <span class="other-label">Other:</span>
-                <v-text-field
-                  v-model="retentionOther"
-                  class="other-field"
-                  counter="200"
-                  maxlength="200"
-                  :disabled="retention !== 'other'"
-                  hide-details="auto"
-                  dense></v-text-field>
-              </template>
-            </v-radio>
-            <v-radio value="later" label="I will decide later"></v-radio>
-          </v-radio-group>
-
           <!-- ---------- Hosting Policy notice ---------- -->
           <div class="hp-notice">
             <h4>All Wikibases on our platform are temporary by default.</h4>
 
             <p>
-              Whatever you answered above, this Wikibase will go offline in 3 months, unless it has
-              been approved to stay.
+              Once you're confident you want to keep this Wikibase longer than 3 months,
+              submit it for review.
             </p>
 
             <p>
-              Once you're confident you want to keep this Wikibase longer, submit it for review.
-            </p>
-
-            <p>
-              Some uses can't be approved for a longer stay at all &mdash; for example primarily
-              commercial or promotional use, or content under a license that isn't free and open.
-              The full conditions are in the
+              Note that some uses can't be approved for a longer stay at all &mdash; for example,
+              primarily commercial or promotional use, or content under a license that isn't free
+              and open. The full conditions are in the
               <a href="https://www.wikibase.cloud/hosting-policy" target="_blank" rel="noopener">Hosting Policy</a>. Make
               sure your use case would be approved before you invest time in building it.
             </p>
@@ -236,8 +192,6 @@
       theme: { themes: { light: { primary: '#1976d2' } } }
     }),
     data: {
-      retention: null,
-      retentionOther: '',
       hpUnderstood: false,
     },
     computed: {
