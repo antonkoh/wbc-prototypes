@@ -139,20 +139,23 @@ the "any further questions" section from the pilot questionnaire are all exclude
   second route for the case that belongs in the graded questions. The cap is `maxlength`, so the
   field stops accepting input - it never truncates a message the manager thinks was sent.
 - The MVP variant only. The full variant does not have this field yet.
-- Submissions carry the committee's states: `SUBMITTED`, `IN_REVIEW`, `APPROVED`,
-  `REJECTED`. There is still no cancelling, so no `CANCELLED`. At most one submission is
-  open (`SUBMITTED` or `IN_REVIEW`) at a time.
+- Submissions carry the same states as the admin view: `SUBMITTED`, `IN_REVIEW`, `APPROVED`,
+  `REJECTED`, `CANCELLED`. At most one submission is open (`SUBMITTED` or `IN_REVIEW`) at a
+  time.
+- The manager can cancel a submission while it is `SUBMITTED`, with a Cancel button on its
+  row, as in the full variant. Once the committee has picked it up, the button is gone.
+  Cancelling is the manager's action only - the committee control has no cancel.
 - Closed submissions stay in the list under "Your submissions", newest first, with
-  "Approved on <date>" or "Rejected on <date>". No decision explanation is shown - the full
-  variant's rejection reason was not carried over.
-- The submit card is hidden while a submission is open and comes back once it is approved
-  or rejected, with the four confirmations unticked and the free-text field empty. The
-  submissions card is hidden until the first submission - there is no empty state for it,
-  because a manager who has not submitted is looking at the form instead.
+  "Approved on <date>", "Rejected on <date>" or "Cancelled on <date>". No decision
+  explanation is shown - the full variant's rejection reason was not carried over.
+- The submit card is hidden while a submission is open and comes back once it is approved,
+  rejected or cancelled, with the four confirmations unticked and the free-text field empty.
+  The submissions card is hidden until the first submission - there is no empty state for
+  it, because a manager who has not submitted is looking at the form instead.
 - Nothing is seeded. The prototype always opens on the empty form.
-- Since there is no cancelling, a "Reset prototype" button sits in the top-right of the
-  prototype banner so the flow can be demoed again without a page reload. It also clears
-  the submission list. It is demo scaffolding, outside the simulated product UI on purpose.
+- A "Reset prototype" button sits in the top-right of the prototype banner so the flow can
+  be demoed again from an empty list without a page reload. It is demo scaffolding, outside
+  the simulated product UI on purpose.
 - The questionnaire link points at the real survey,
   `https://wikimedia.sslsurvey.de/WBC-Hosting-Policy-Review-Submission/?<wiki_id>`. The
   `<wiki_id>` stays literal in the prototype - the platform would substitute the instance id

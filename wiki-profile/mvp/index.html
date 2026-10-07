@@ -424,6 +424,9 @@
               <div class="sub-head">
                 <v-chip x-small label dark :color="statusColor(s.status)">{{ statusLabel(s.status) }}</v-chip>
                 <span class="sub-date">Submitted {{ s.date }}</span>
+                <v-spacer></v-spacer>
+                <v-btn v-if="s.status === 'SUBMITTED'" x-small text color="error"
+                  @click="cancelSubmission(s)">Cancel</v-btn>
               </div>
               <div class="sub-meta" v-if="s.closed">{{ statusLabel(s.status) }} on {{ s.closed }}</div>
               <div class="sub-meta" v-else>
@@ -493,11 +496,11 @@ new Vue({
   methods: {
     statusLabel(s) {
       return { SUBMITTED: 'Submitted', IN_REVIEW: 'In review', APPROVED: 'Approved',
-               REJECTED: 'Rejected' }[s];
+               REJECTED: 'Rejected', CANCELLED: 'Cancelled' }[s];
     },
     statusColor(s) {
       return { SUBMITTED: 'blue-grey', IN_REVIEW: 'indigo', APPROVED: 'green darken-1',
-               REJECTED: 'red darken-2' }[s];
+               REJECTED: 'red darken-2', CANCELLED: 'grey' }[s];
     },
 
     submitApplication() {
@@ -508,6 +511,12 @@ new Vue({
       this.checkCommitment = false;
       this.extraInfo = '';
       this.toastMessage = 'Submitted for review. Your instance will stay online while we are reviewing your submission.';
+      this.toast = true;
+    },
+    cancelSubmission(s) {
+      s.status = 'CANCELLED';
+      s.closed = today();
+      this.toastMessage = 'Submission cancelled. You can submit a new one.';
       this.toast = true;
     },
 
