@@ -119,8 +119,10 @@ the "any further questions" section from the pilot questionnaire are all exclude
   in the manager's view. It is demo scaffolding: dark, in the prototype banner's colour, and
   titled "Emulate the review committee", so it does not read as product UI. It follows the
   order of the committee's admin view in `hosting-policy-admin` - "Pick up for review" first,
-  then "Approve" or "Reject" - and each button carries the colour of the status it sets. It
-  acts on the open submission only; with none open, every button is disabled.
+  then "Approve" or "Reject" - and each button carries the colour of the status it sets.
+  "Cancel" works at any point while the submission is open, `SUBMITTED` or `IN_REVIEW`. The
+  admin prototype has no cancel action yet. The control acts on the open submission only;
+  with none open, every button is disabled.
 - The gate on the wiki profile is replaced by a **fourth mandatory checkbox**, "I confirm
   that I have filled out the questionnaire for this Wikibase in the external tool." That is
   the only signal available once the profile is out of the platform.
@@ -143,8 +145,9 @@ the "any further questions" section from the pilot questionnaire are all exclude
   `REJECTED`, `CANCELLED`. At most one submission is open (`SUBMITTED` or `IN_REVIEW`) at a
   time.
 - The manager can cancel a submission while it is `SUBMITTED`, with a Cancel button on its
-  row, as in the full variant. Once the committee has picked it up, the button is gone.
-  Cancelling is the manager's action only - the committee control has no cancel.
+  row, as in the full variant. Once the committee has picked it up, the button is gone. The
+  committee can also cancel, at any point while the submission is open. The manager's view
+  shows "Cancelled" either way - it does not say who cancelled.
 - Closed submissions stay in the list under "Your submissions", newest first, with
   "Approved on <date>", "Rejected on <date>" or "Cancelled on <date>". No decision
   explanation is shown - the full variant's rejection reason was not carried over.

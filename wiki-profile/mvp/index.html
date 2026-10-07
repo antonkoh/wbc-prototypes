@@ -272,11 +272,13 @@
       </div>
 
       <!-- Demo scaffolding, not product UI: stands in for the committee's admin view and
-           follows its order - pick up first, then approve or reject. -->
+           follows its order - pick up first, then approve or reject. Cancel works on any
+           open submission. -->
       <div class="committee-control">
         <div class="committee-title">Emulate the review committee</div>
         <div class="committee-lead" v-if="openSubmission">
-          Acts on the open submission, in the same order as the committee's admin view.
+          Acts on the open submission. It has to be picked up before it can be approved or
+          rejected; it can be cancelled at any point.
         </div>
         <div class="committee-lead" v-else>
           No open submission. Submit the instance for review on the right to act on it here.
@@ -290,6 +292,8 @@
             @click="decide('APPROVED')">Approve</v-btn>
           <v-btn small depressed dark color="red darken-2" :disabled="!inReview"
             @click="decide('REJECTED')">Reject</v-btn>
+          <v-btn small depressed dark color="grey" :disabled="!openSubmission"
+            @click="decide('CANCELLED')">Cancel</v-btn>
         </div>
       </div>
     </div>
