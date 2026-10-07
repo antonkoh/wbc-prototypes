@@ -23,7 +23,7 @@ page, and the prototype banner switches between them.
 |---|---|---|
 | `/` | `index.html` | Landing page, picks one of the two |
 | `/full` | `full/index.html` | Full scope - wiki profile in the platform, full submission model |
-| `/mvp` | `mvp/index.html` | MVP scope - external questionnaire, one submission or none |
+| `/mvp` | `mvp/index.html` | MVP scope - external questionnaire, one open submission at a time |
 
 The two variants are **separate files on purpose**. They are expected to diverge as the
 decision is discussed, and the full one must not break while the MVP one is edited. Fixes
@@ -113,8 +113,14 @@ the "any further questions" section from the pilot questionnaire are all exclude
 
 - There is **no Profile tab** in the tab bar. In this option the wiki profile does not exist
   in the platform at all, so showing the tab would misrepresent the scope.
-- The left pane is kept, but holds only the sentence "The manager fills out a questionnaire
-  in an external tool." The two-pane frame is what makes the two variants comparable.
+- The left pane is kept for the sentence "The manager fills out a questionnaire in an
+  external tool." The two-pane frame is what makes the two variants comparable.
+- Under that sentence sits a **review committee control**, so a status change can be demoed
+  in the manager's view. It is demo scaffolding: dark, in the prototype banner's colour, and
+  titled "Emulate the review committee", so it does not read as product UI. It follows the
+  order of the committee's admin view in `hosting-policy-admin` - "Pick up for review" first,
+  then "Approve" or "Reject" - and each button carries the colour of the status it sets. It
+  acts on the open submission only; with none open, every button is disabled.
 - The gate on the wiki profile is replaced by a **fourth mandatory checkbox**, "I confirm
   that I have filled out the questionnaire for this Wikibase in the external tool." That is
   the only signal available once the profile is out of the platform.
@@ -133,15 +139,20 @@ the "any further questions" section from the pilot questionnaire are all exclude
   second route for the case that belongs in the graded questions. The cap is `maxlength`, so the
   field stops accepting input - it never truncates a message the manager thinks was sent.
 - The MVP variant only. The full variant does not have this field yet.
-- A submission either exists or it does not. No states beyond `SUBMITTED`, no history, no
-  cancelling, and the card is titled "Your submission", singular.
-- The submit card and the submission card are **mutually exclusive** - exactly one is on
-  screen at any time. There is no empty state for the submission card, because a manager
-  who has not submitted is looking at the form instead.
+- Submissions carry the committee's states: `SUBMITTED`, `IN_REVIEW`, `APPROVED`,
+  `REJECTED`. There is still no cancelling, so no `CANCELLED`. At most one submission is
+  open (`SUBMITTED` or `IN_REVIEW`) at a time.
+- Closed submissions stay in the list under "Your submissions", newest first, with
+  "Approved on <date>" or "Rejected on <date>". No decision explanation is shown - the full
+  variant's rejection reason was not carried over.
+- The submit card is hidden while a submission is open and comes back once it is approved
+  or rejected, with the four confirmations unticked and the free-text field empty. The
+  submissions card is hidden until the first submission - there is no empty state for it,
+  because a manager who has not submitted is looking at the form instead.
 - Nothing is seeded. The prototype always opens on the empty form.
 - Since there is no cancelling, a "Reset prototype" button sits in the top-right of the
-  prototype banner so the flow can be demoed twice without a page reload. It is demo
-  scaffolding, outside the simulated product UI on purpose.
+  prototype banner so the flow can be demoed again without a page reload. It also clears
+  the submission list. It is demo scaffolding, outside the simulated product UI on purpose.
 - The questionnaire link points at the real survey,
   `https://wikimedia.sslsurvey.de/WBC-Hosting-Policy-Review-Submission/?<wiki_id>`. The
   `<wiki_id>` stays literal in the prototype - the platform would substitute the instance id

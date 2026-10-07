@@ -111,6 +111,7 @@
     .pane.external {
       background: #eceff1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
@@ -127,6 +128,33 @@
       color: #455a64;
       margin-top: 12px;
     }
+
+    /* ---------- left pane: review committee control (demo scaffolding) ---------- */
+    .committee-control {
+      width: calc(100% - 48px);
+      max-width: 340px;
+      margin-top: 24px;
+      background: #37474f;
+      color: #fff;
+      border-radius: 4px;
+      padding: 14px 16px 16px 16px;
+    }
+    .committee-title {
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+    .committee-lead {
+      font-size: 13px;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.85);
+      margin: 6px 0 12px 0;
+    }
+    .committee-decide { display: flex; gap: 8px; margin-top: 8px; }
+    .committee-decide .v-btn { flex: 1; }
 
     /* ---------- WBC chrome ---------- */
     .wbc-header {
@@ -207,6 +235,7 @@
       background: #fff;
       padding: 12px 14px;
     }
+    .sub-item + .sub-item { margin-top: 10px; }
     .sub-head { display: flex; align-items: center; gap: 10px; }
     .sub-date { font-size: 13.5px; font-weight: 500; color: #212121; }
     .sub-meta { font-size: 12px; color: #757575; margin-top: 6px; line-height: 1.55; }
@@ -241,6 +270,28 @@
           The manager fills out a questionnaire in an external tool.
         </div>
       </div>
+
+      <!-- Demo scaffolding, not product UI: stands in for the committee's admin view and
+           follows its order - pick up first, then approve or reject. -->
+      <div class="committee-control">
+        <div class="committee-title">Emulate the review committee</div>
+        <div class="committee-lead" v-if="openSubmission">
+          Acts on the open submission, in the same order as the committee's admin view.
+        </div>
+        <div class="committee-lead" v-else>
+          No open submission. Submit the instance for review on the right to act on it here.
+        </div>
+
+        <v-btn block small depressed dark color="indigo" :disabled="!awaitingPickUp" @click="pickUp">
+          <v-icon left small>mdi-play</v-icon> Pick up for review
+        </v-btn>
+        <div class="committee-decide">
+          <v-btn small depressed dark color="green darken-1" :disabled="!inReview"
+            @click="decide('APPROVED')">Approve</v-btn>
+          <v-btn small depressed dark color="red darken-2" :disabled="!inReview"
+            @click="decide('REJECTED')">Reject</v-btn>
+        </div>
+      </div>
     </div>
 
     <div class="pane-gutter"></div>
@@ -261,7 +312,7 @@
 
       <div class="profile-content">
 
-        <v-card outlined class="profile-card" v-if="!submission">
+        <v-card outlined class="profile-card" v-if="!openSubmission">
           <v-card-title>Submit for review</v-card-title>
           <v-card-subtitle>
             This instance is temporary. To keep it, submit it for review by the hosting policy
@@ -366,15 +417,16 @@
           </v-card-actions>
         </v-card>
 
-        <v-card outlined class="profile-card" v-if="submission">
-          <v-card-title>Your submission</v-card-title>
+        <v-card outlined class="profile-card" v-if="submissions.length">
+          <v-card-title>Your submissions</v-card-title>
           <v-card-text>
-            <div class="sub-item">
+            <div v-for="s in submissions" :key="s.id" class="sub-item">
               <div class="sub-head">
-                <v-chip x-small label dark color="blue-grey">Submitted</v-chip>
-                <span class="sub-date">Submitted {{ submission.date }}</span>
+                <v-chip x-small label dark :color="statusColor(s.status)">{{ statusLabel(s.status) }}</v-chip>
+                <span class="sub-date">Submitted {{ s.date }}</span>
               </div>
-              <div class="sub-meta">
+              <div class="sub-meta" v-if="s.closed">{{ statusLabel(s.status) }} on {{ s.closed }}</div>
+              <div class="sub-meta" v-else>
                 Your instance will stay online while we are reviewing your submission. We will
                 contact you about the outcome.
               </div>
@@ -412,7 +464,8 @@ new Vue({
 
     extraInfo: '',
 
-    submission: null,
+    submissions: [],
+    nextId: 1,
 
     toast: false,
     toastMessage: '',
@@ -423,7 +476,13 @@ new Vue({
       return this.checkQuestionnaire && this.checkLicense
         && this.checkDisclaimer && this.checkCommitment;
     },
-    canSubmit() { return !this.submission && this.allChecked; },
+    // At most one submission is open at a time; the submit card is hidden while it is.
+    openSubmission() {
+      return this.submissions.find(s => s.status === 'SUBMITTED' || s.status === 'IN_REVIEW');
+    },
+    awaitingPickUp() { return !!this.openSubmission && this.openSubmission.status === 'SUBMITTED'; },
+    inReview() { return !!this.openSubmission && this.openSubmission.status === 'IN_REVIEW'; },
+    canSubmit() { return !this.openSubmission && this.allChecked; },
 
     blockReason() {
       if (!this.allChecked) return 'Tick all four confirmations to submit.';
@@ -432,13 +491,39 @@ new Vue({
   },
 
   methods: {
+    statusLabel(s) {
+      return { SUBMITTED: 'Submitted', IN_REVIEW: 'In review', APPROVED: 'Approved',
+               REJECTED: 'Rejected' }[s];
+    },
+    statusColor(s) {
+      return { SUBMITTED: 'blue-grey', IN_REVIEW: 'indigo', APPROVED: 'green darken-1',
+               REJECTED: 'red darken-2' }[s];
+    },
+
     submitApplication() {
-      this.submission = { date: today() };
+      this.submissions.unshift({ id: this.nextId++, date: today(), closed: null, status: 'SUBMITTED' });
+      this.checkQuestionnaire = false;
+      this.checkLicense = false;
+      this.checkDisclaimer = false;
+      this.checkCommitment = false;
+      this.extraInfo = '';
       this.toastMessage = 'Submitted for review. Your instance will stay online while we are reviewing your submission.';
       this.toast = true;
     },
+
+    // Demo scaffolding: the review committee control in the left pane.
+    pickUp() {
+      this.openSubmission.status = 'IN_REVIEW';
+    },
+    decide(status) {
+      const s = this.openSubmission;
+      s.status = status;
+      s.closed = today();
+    },
+
     resetPrototype() {
-      this.submission = null;
+      this.submissions = [];
+      this.nextId = 1;
       this.checkQuestionnaire = false;
       this.checkLicense = false;
       this.checkDisclaimer = false;
