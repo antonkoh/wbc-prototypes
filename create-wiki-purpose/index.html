@@ -365,6 +365,8 @@
 
   // Markup between the panes: each internal category points at the option(s) it is stored as.
   // Data Lab exists only before; Data Staging and Classroom only after.
+  // Order matters: labels stack top to bottom in this order, which must follow the order of the
+  // options in both panes at once. That is what keeps the lines from crossing.
   const MARKUP = [
     { label: 'Data Hub', before: 'data_hub', after: 'data_hub' },
     { label: 'Data Lab', before: 'data_lab' },
@@ -424,9 +426,9 @@
           const ya = optionY(this.$refs.afterPane, m.after);
           const ys = [yb, ya].filter(v => v !== null);
           return { label: m.label, yb, ya, y: ys.reduce((s, v) => s + v, 0) / ys.length };
-        }).filter(it => !Number.isNaN(it.y)).sort((a, b) => a.y - b.y);
+        }).filter(it => !Number.isNaN(it.y));  // keep MARKUP order: sorting by height can cross lines
 
-        // Each label sits level with its option(s); push it down if it would overlap the one above.
+        // Each label aims for the middle of its option(s), but never sits above the label before it.
         let floor = -Infinity;
         items.forEach(it => {
           it.y = Math.max(it.y, floor + LABEL_GAP + LABEL_HEIGHT / 2);
