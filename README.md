@@ -14,7 +14,7 @@ stakeholders - not production code.
 | [`reuse/`](reuse/) | An "intended for reuse" treatment surfacing how an instance's data can be reused. | - |
 | [`create-wiki-disclaimer/`](create-wiki-disclaimer/) | The last step of the creation dialog, telling the person their Wikibase is temporary by default and asking them to confirm they understood. | [link](https://wbc-temporary-by-default.netlify.app) |
 | [`wiki-profile/`](wiki-profile/) | The manager's side of the hosting policy review: describing the use case in the wiki profile, and submitting the instance for review. Two variants of the same story - [`/full`](https://wbc-hp-submissions.netlify.app/full) and [`/mvp`](https://wbc-hp-submissions.netlify.app/mvp). | [link](https://wbc-hp-submissions.netlify.app) |
-| [`create-wiki-purpose/`](create-wiki-purpose/) | Step 2 of the creation dialog, reworked: purpose options aligned with the hosting-policy categories, and follow-ups that flag Data Hubs first meant for Wikidata and Data Staging for Wikidata. | [link](https://wbc-create-wiki-purpose.netlify.app) |
+| [`create-wiki-purpose/`](create-wiki-purpose/) | Step 2 of the creation dialog, before and after the rework: purpose options aligned with the hosting-policy categories, and follow-ups that flag Data Hubs first meant for Wikidata and Data Staging for Wikidata. | [link](https://wbc-create-wiki-purpose.netlify.app) |
 | [`hosting-policy-admin/`](hosting-policy-admin/) | The review committee admin view: triage submissions, change their status, set or remove scheduled suspension dates, record decision explanations, and suspend or unsuspend instances out of process. | [link](https://bucolic-pegasus-82a9af.netlify.app) |
 
 Each is a self-contained `index.html`, sometimes with an `assets/` folder. Open
