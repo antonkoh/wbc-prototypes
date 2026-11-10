@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create a wiki - Purpose step - Wikibase Cloud Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.min.css">
+
+  <style>
+    html, body, #app { height: 100%; margin: 0; }
+    body { font-family: Roboto, sans-serif; }
+
+    .v-application { height: 100vh !important; }
+    .v-application--wrap { min-height: 100vh; display: flex; flex-direction: column; }
+
+    .prototype-banner {
+      flex: 0 0 28px;
+      height: 28px;
+      background: #37474f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      font-family: 'Jost', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .stage {
+      flex: 1;
+      overflow-y: auto;
+      background: #eceff1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 24px;
+      padding: 32px 16px 48px;
+    }
+
+    /* ---------- Dialog (step 2 of Create a wiki) ---------- */
+    .dialog-card { width: 420px; max-width: 100%; }
+    .dialog-card h3 { font-size: 15px; line-height: 1.4; margin: 0 0 4px; }
+    .why-we-ask { font-size: 13px; line-height: 1.45; color: #757575; margin: 0 0 6px !important; }
+    .dialog-card .v-input--radio-group { margin-top: 8px; }
+    .dialog-card .v-label { line-height: 1.4; }
+    .actions { flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 8px 16px 16px; }
+    .v-btn { font-family: Roboto, sans-serif; }
+
+    /* ---------- Prototype-only readout, outside the product UI ---------- */
+    .readout {
+      width: 300px;
+      max-width: 100%;
+      border: 1px dashed #90a4ae;
+      border-radius: 4px;
+      background: #f7f9fa;
+      padding: 14px 16px;
+      font-family: 'Jost', sans-serif;
+      color: #37474f;
+    }
+    .readout-kicker {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #78909c;
+      margin: 0 0 2px;
+    }
+    .readout h2 { font-size: 16px; font-weight: 600; margin: 0 0 10px; }
+    .readout dl { margin: 0; }
+    .readout dt { font-size: 12px; color: #78909c; margin-top: 8px; }
+    .readout dd { font-size: 14px; margin: 0; overflow-wrap: anywhere; }
+    .readout .missing { color: #b0bec5; font-style: italic; }
+    .readout .note { font-size: 12px; color: #78909c; margin: 12px 0 0; line-height: 1.45; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <v-app>
+    <div class="prototype-banner">Prototype &mdash; Create a wiki: purpose step</div>
+
+    <div class="stage">
+
+      <!-- ============ Step 2 of the creation dialog ============ -->
+      <v-card class="elevation-12 dialog-card">
+        <v-toolbar dark color="primary" flat>
+          <v-toolbar-title>Create a wiki</v-toolbar-title>
+        </v-toolbar>
+
+        <v-card-text>
+          <h3>What best describes how you intend to use this Wikibase?</h3>
+          <p class="why-we-ask">We ask to understand what people create Wikibases for. Your answers don't change how your Wikibase works.</p>
+
+          <v-form ref="form" @submit.prevent>
+            <v-radio-group v-model="purpose" :rules="[required]">
+              <v-radio value="data_hub">
+                <template v-slot:label>
+                  <div>To make this Wikibase the <b>home of a dataset</b> meant to be accessed and reused from here</div>
+                </template>
+              </v-radio>
+              <v-radio value="data_staging">
+                <template v-slot:label>
+                  <div>To <b>prepare a dataset or data model</b> that will live in another Wikibase (for example, Wikidata)</div>
+                </template>
+              </v-radio>
+              <v-radio value="tool_lab">
+                <template v-slot:label>
+                  <div>To <b>build a tool</b> for the Wikidata &amp; Wikibase ecosystem, such as a bot, data importer, or gadget, and test it here</div>
+                </template>
+              </v-radio>
+              <v-radio value="classroom">
+                <template v-slot:label>
+                  <div>To <b>teach other people</b> what Wikibase does, for example in a course or workshop</div>
+                </template>
+              </v-radio>
+              <v-radio value="test_drive">
+                <template v-slot:label>
+                  <div>To <b>find out for myself</b> what Wikibase does and whether it fits my use case</div>
+                </template>
+              </v-radio>
+              <v-radio value="other">
+                <template v-slot:label>
+                  Other:
+                  <v-text-field
+                    v-model="otherPurpose"
+                    counter="200"
+                    dense
+                    class="pl-1 mt-n1 mb-n2"
+                    :rules="otherTextRules(() => purpose === 'other')"
+                  ></v-text-field>
+                </template>
+              </v-radio>
+              <v-radio value="decide_later" label="I will decide later"></v-radio>
+            </v-radio-group>
+
+            <!-- Data Hub follow-ups: the audience question as today, then the new Wikidata question -->
+            <div v-if="purpose === 'data_hub'" class="pt-3">
+              <h3>Who is the intended audience for this data?</h3>
+              <v-radio-group v-model="audience" :rules="[required]">
+                <v-radio value="wide" label="Anyone interested"></v-radio>
+                <v-radio value="narrow" label="Myself or my organization"></v-radio>
+                <v-radio value="other" class="mt-n3">
+                  <template v-slot:label>
+                    Other:
+                    <v-text-field
+                      v-model="otherAudience"
+                      counter="200"
+                      dense
+                      class="pl-1"
+                      :rules="otherTextRules(() => audience === 'other')"
+                    ></v-text-field>
+                  </template>
+                </v-radio>
+              </v-radio-group>
+
+              <h3 class="pt-3">Was Wikidata your first choice for this data?</h3>
+              <v-radio-group v-model="wikidataFirst" :rules="[required]">
+                <v-radio value="no" label="No"></v-radio>
+                <v-radio value="rejected" label="Yes, but it was rejected or removed from Wikidata"></v-radio>
+                <v-radio value="learned" label="Yes, but I found out it doesn't belong on Wikidata"></v-radio>
+                <v-radio value="preferred" label="Yes, but I decided it fits better in its own Wikibase"></v-radio>
+                <v-radio value="other" class="mt-n3">
+                  <template v-slot:label>
+                    Other:
+                    <v-text-field
+                      v-model="otherWikidataFirst"
+                      counter="200"
+                      dense
+                      class="pl-1"
+                      :rules="otherTextRules(() => wikidataFirst === 'other')"
+                    ></v-text-field>
+                  </template>
+                </v-radio>
+              </v-radio-group>
+            </div>
+
+            <!-- Data Staging follow-up -->
+            <div v-if="purpose === 'data_staging'" class="pt-3">
+              <h3>Are you preparing this data or data model for Wikidata?</h3>
+              <v-radio-group v-model="forWikidata" :rules="[required]">
+                <v-radio value="yes" label="Yes, all or part of it"></v-radio>
+                <v-radio value="no" label="No"></v-radio>
+                <v-radio value="not_sure" label="Not sure yet"></v-radio>
+              </v-radio-group>
+            </div>
+          </v-form>
+        </v-card-text>
+
+        <v-card-actions class="actions">
+          <!-- Does nothing on purpose: step 1 is not part of this prototype. -->
+          <v-btn type="button">&lt; Previous</v-btn>
+          <!-- Validates the step, then does nothing: step 3 is a separate prototype. -->
+          <v-btn type="button" color="primary" @click="next">Next &gt;</v-btn>
+        </v-card-actions>
+      </v-card>
+
+      <!-- ============ Prototype only: not part of the product ============ -->
+      <aside class="readout" aria-label="Prototype only: how the answers are read">
+        <p class="readout-kicker">Prototype only</p>
+        <h2>How the answers are read</h2>
+        <dl>
+          <dt>Category</dt>
+          <dd :class="{ missing: !purpose }">{{ categoryText }}</dd>
+
+          <template v-if="purpose === 'other'">
+            <dt>Other purpose</dt>
+            <dd :class="{ missing: !otherPurpose.trim() }">{{ otherPurpose.trim() || 'not answered yet' }}</dd>
+          </template>
+
+          <template v-if="purpose === 'data_hub'">
+            <dt>Audience</dt>
+            <dd :class="{ missing: !audience }">{{ audienceText }}</dd>
+            <dt>Wikidata first choice</dt>
+            <dd :class="{ missing: !wikidataFirst }">{{ wikidataFirstText }}</dd>
+          </template>
+
+          <template v-if="purpose === 'data_staging'">
+            <dt>Prepared for Wikidata</dt>
+            <dd :class="{ missing: !forWikidata }">{{ forWikidataText }}</dd>
+          </template>
+        </dl>
+        <p class="note">Follow-ups appear only for Data Hub and Data Staging. Answers to a follow-up that is no longer shown are not stored.</p>
+      </aside>
+
+    </div>
+  </v-app>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.js"></script>
+<script>
+  // Internal readings from the PRD tables (R1 categories, R2 "Read as"). Never shown in the dialog.
+  const CATEGORY = {
+    data_hub: 'Data Hub',
+    data_staging: 'Data Staging',
+    tool_lab: 'Tool Lab',
+    classroom: 'Classroom',
+    test_drive: 'Test Drive',
+    other: 'None of the above',
+    decide_later: '- (decides later)',
+  };
+  const AUDIENCE = { wide: 'Anyone interested', narrow: 'Myself or my organization' };
+  const WIKIDATA_FIRST = {
+    no: 'Direct',
+    rejected: 'Redirected: rejected',
+    learned: 'Redirected: learned',
+    preferred: 'Redirected: preferred',
+  };
+  const FOR_WIKIDATA = { yes: 'Yes, all or part of it', no: 'No', not_sure: 'Not sure yet' };
+
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify({
+      theme: { themes: { light: { primary: '#1976d2' } } }
+    }),
+    data: {
+      purpose: null,          // nothing pre-selected
+      otherPurpose: '',
+      audience: null,
+      otherAudience: '',
+      wikidataFirst: null,
+      otherWikidataFirst: '',
+      forWikidata: null,
+    },
+    computed: {
+      categoryText() {
+        return this.purpose ? CATEGORY[this.purpose] : 'not answered yet';
+      },
+      audienceText() {
+        if (!this.audience) return 'not answered yet';
+        if (this.audience === 'other') return 'Other: ' + (this.otherAudience.trim() || '...');
+        return AUDIENCE[this.audience];
+      },
+      wikidataFirstText() {
+        if (!this.wikidataFirst) return 'not answered yet';
+        if (this.wikidataFirst === 'other') {
+          return 'Classified by hand: ' + (this.otherWikidataFirst.trim() || '...');
+        }
+        return WIKIDATA_FIRST[this.wikidataFirst];
+      },
+      forWikidataText() {
+        return this.forWikidata ? FOR_WIKIDATA[this.forWikidata] : 'not answered yet';
+      },
+    },
+    methods: {
+      required(v) {
+        return !!v || 'Please select an option.';
+      },
+      // The live dialog's rules for "Other" text: required while "Other" is selected, at most 200 characters.
+      otherTextRules(isSelected) {
+        return [
+          v => !isSelected() || !!(v && v.trim()) || 'Please provide a response.',
+          v => !isSelected() || !v || v.length <= 200 || 'Text must be 200 characters or less.',
+        ];
+      },
+      next() {
+        // As the audience question works today: answers to follow-ups that are no longer
+        // shown are dropped when the person moves on, so they are never stored.
+        if (this.purpose !== 'data_hub') {
+          this.audience = null;
+          this.wikidataFirst = null;
+        }
+        if (this.purpose !== 'data_staging') this.forWikidata = null;
+        if (this.purpose !== 'other') this.otherPurpose = '';
+        if (this.audience !== 'other') this.otherAudience = '';
+        if (this.wikidataFirst !== 'other') this.otherWikidataFirst = '';
+        this.$refs.form.validate();
+      },
+    },
+  });
+</script>
+</body>
+</html>
