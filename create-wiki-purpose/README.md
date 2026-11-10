@@ -35,6 +35,10 @@ Built to review behaviour and copy, not visual design.
   answers to hidden follow-ups "as the audience question does today", and the live component
   clears them when the person presses NEXT. So switching to another option and straight back still
   shows the earlier answers; once NEXT is pressed, they are gone.
+- **Red markup between the panes** names the internal category of each purpose option and points to
+  it: Data Hub, Tool Lab and Test Drive to both panes, Data Lab only to "before", Data Staging and
+  Classroom only to "after". It is scaffolding outside the product UI, drawn from the live layout,
+  and hidden when the panes stack on narrow screens.
 - **"Reset prototype" sits in the banner**, as in `wiki-profile`: it clears both panes, answers and
   validation errors, and is scaffolding rather than product UI.
 - **< PREVIOUS does nothing, and NEXT only validates.** Steps 1 and 3 are not part of this

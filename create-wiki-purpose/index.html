@@ -53,15 +53,43 @@
       overflow-y: auto;
       background: #eceff1;
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       align-items: flex-start;
-      gap: 32px 96px;
       padding: 24px 16px 48px;
     }
 
-    /* ---------- Before / after panes (prototype scaffolding) ---------- */
-    .pane { width: 420px; max-width: 100%; }
+    /* ---------- Before / markup / after (prototype scaffolding) ---------- */
+    .compare {
+      position: relative;
+      display: grid;
+      grid-template-columns: 420px 220px 420px;  /* the middle column holds the category markup */
+      align-items: start;
+    }
+    .pane { min-width: 0; }
+
+    /* Too narrow for side by side: stack the panes and drop the markup, which needs both. */
+    @media (max-width: 1099px) {
+      .compare { grid-template-columns: minmax(0, 420px); row-gap: 32px; width: 100%; justify-content: center; }
+      .compare-middle, .markup { display: none; }
+    }
+
+    .markup { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+    .markup-lines, .markup-lines svg { position: absolute; top: 0; left: 0; overflow: visible; }
+    .markup-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: #d32f2f;
+      color: #fff;
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      line-height: 1;
+      padding: 5px 9px;
+      border-radius: 3px;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
     .pane-label {
       font-family: 'Jost', sans-serif;
       color: #37474f;
@@ -93,9 +121,10 @@
     </div>
 
     <div class="stage">
+     <div class="compare" ref="compare">
 
       <!-- ============ BEFORE: the live dialog today ============ -->
-      <section class="pane">
+      <section class="pane" ref="beforePane">
         <p class="pane-label"><strong>Before</strong><span>the live dialog today</span></p>
 
         <v-card class="elevation-12 dialog-card">
@@ -174,8 +203,11 @@
         </v-card>
       </section>
 
+      <!-- Empty column between the panes: the category markup is drawn over it. -->
+      <div class="compare-middle" ref="middle" aria-hidden="true"></div>
+
       <!-- ============ AFTER: proposed in the PRD ============ -->
-      <section class="pane">
+      <section class="pane" ref="afterPane">
         <p class="pane-label"><strong>After</strong><span>proposed in the PRD</span></p>
 
         <v-card class="elevation-12 dialog-card">
@@ -291,6 +323,18 @@
         </v-card>
       </section>
 
+      <!-- ============ Markup: internal categories, outside the product UI ============ -->
+      <div class="markup" aria-hidden="true">
+        <div class="markup-lines" v-html="markup.svg"></div>
+        <span
+          v-for="l in markup.labels"
+          :key="l.label"
+          class="markup-label"
+          :style="{ left: l.x + 'px', top: l.y + 'px' }"
+        >{{ l.label }}</span>
+      </div>
+
+     </div>
     </div>
   </v-app>
 </div>
@@ -319,13 +363,93 @@
     };
   }
 
+  // Markup between the panes: each internal category points at the option(s) it is stored as.
+  // Data Lab exists only before; Data Staging and Classroom only after.
+  const MARKUP = [
+    { label: 'Data Hub', before: 'data_hub', after: 'data_hub' },
+    { label: 'Data Lab', before: 'data_lab' },
+    { label: 'Data Staging', after: 'data_staging' },
+    { label: 'Tool Lab', before: 'tool_lab', after: 'tool_lab' },
+    { label: 'Classroom', after: 'classroom' },
+    { label: 'Test Drive', before: 'test_drive', after: 'test_drive' },
+  ];
+  const LABEL_HEIGHT = 22;
+  const LABEL_GAP = 6;
+  const MARKUP_RED = '#d32f2f';
+
   new Vue({
     el: '#app',
     vuetify: new Vuetify({
       theme: { themes: { light: { primary: '#1976d2' } } }
     }),
-    data: freshState(),
+    data() {
+      return Object.assign(freshState(), { markup: { svg: '', labels: [] } });
+    },
+    mounted() {
+      // Option positions shift when fonts load or the window changes size, so redraw then.
+      const relayout = () => this.layoutMarkup();
+      this.$nextTick(relayout);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+      window.addEventListener('resize', relayout);
+      if (window.ResizeObserver) new ResizeObserver(relayout).observe(this.$refs.compare);
+    },
     methods: {
+      layoutMarkup() {
+        const root = this.$refs.compare;
+        const middle = this.$refs.middle;
+        if (!root || !middle || getComputedStyle(middle).display === 'none') {
+          this.markup = { svg: '', labels: [] };  // panes stacked: nothing to point across
+          return;
+        }
+        const base = root.getBoundingClientRect();
+        const mid = middle.getBoundingClientRect();
+        const card = pane => pane.querySelector('.v-card').getBoundingClientRect();
+        // Vertical centre of an option of the purpose question (the first radio group in a pane).
+        const optionY = (pane, value) => {
+          if (!value) return null;
+          const group = pane.querySelector('.v-input--radio-group');
+          const input = group && group.querySelector('input[type="radio"][value="' + value + '"]');
+          const row = input && input.closest('.v-radio');
+          if (!row) return null;
+          const r = row.getBoundingClientRect();
+          return r.top + r.height / 2 - base.top;
+        };
+
+        const xBefore = card(this.$refs.beforePane).right - base.left;
+        const xAfter = card(this.$refs.afterPane).left - base.left;
+        const x = mid.left + mid.width / 2 - base.left;
+
+        const items = MARKUP.map(m => {
+          const yb = optionY(this.$refs.beforePane, m.before);
+          const ya = optionY(this.$refs.afterPane, m.after);
+          const ys = [yb, ya].filter(v => v !== null);
+          return { label: m.label, yb, ya, y: ys.reduce((s, v) => s + v, 0) / ys.length };
+        }).filter(it => !Number.isNaN(it.y)).sort((a, b) => a.y - b.y);
+
+        // Each label sits level with its option(s); push it down if it would overlap the one above.
+        let floor = -Infinity;
+        items.forEach(it => {
+          it.y = Math.max(it.y, floor + LABEL_GAP + LABEL_HEIGHT / 2);
+          floor = it.y + LABEL_HEIGHT / 2;
+        });
+
+        const curve = (x1, y1, x2, y2) => {
+          const k = (x2 - x1) / 2;
+          return `M${x1},${y1} C${x1 + k},${y1} ${x2 - k},${y2} ${x2},${y2}`;
+        };
+        let shapes = '';
+        items.forEach(it => {
+          [[it.yb, xBefore], [it.ya, xAfter]].forEach(([ty, tx]) => {
+            if (ty === null) return;
+            shapes += `<path d="${curve(x, it.y, tx, ty)}" fill="none" stroke="${MARKUP_RED}" stroke-width="1.5"/>`;
+            shapes += `<circle cx="${tx}" cy="${ty}" r="3.5" fill="${MARKUP_RED}"/>`;
+          });
+        });
+        this.markup = {
+          svg: `<svg width="${base.width}" height="${base.height}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`,
+          labels: items.map(it => ({ label: it.label, x, y: it.y })),
+        };
+      },
       // Prototype scaffolding in the banner, not part of the product: clears both panes.
       resetPrototype() {
         Object.assign(this.$data, freshState());
