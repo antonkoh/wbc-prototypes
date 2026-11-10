@@ -18,20 +18,35 @@
     .v-application--wrap { min-height: 100vh; display: flex; flex-direction: column; }
 
     .prototype-banner {
-      flex: 0 0 28px;
-      height: 28px;
+      flex: 0 0 auto;
+      min-height: 28px;            /* one line on desktop; grows when the title wraps on a phone */
       background: #37474f;
       color: #fff;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 0 14px;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 14px;
       font-family: 'Jost', sans-serif;
       font-size: 13px;
       letter-spacing: 0.12em;
       font-weight: 500;
       text-transform: uppercase;
     }
+    .banner-reset {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .banner-reset:hover { color: #fff; }
 
     .stage {
       flex: 1;
@@ -41,7 +56,7 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: flex-start;
-      gap: 40px;
+      gap: 32px 96px;
       padding: 24px 16px 48px;
     }
 
@@ -72,7 +87,10 @@
 <body>
 <div id="app">
   <v-app>
-    <div class="prototype-banner">Prototype &mdash; Create a wiki: purpose step, before and after</div>
+    <div class="prototype-banner">
+      <span>Prototype &mdash; Create a wiki: purpose step, before and after</span>
+      <button class="banner-reset" @click="resetPrototype">Reset prototype</button>
+    </div>
 
     <div class="stage">
 
@@ -173,12 +191,12 @@
               <v-radio-group v-model="after.purpose" :rules="[required]">
                 <v-radio value="data_hub">
                   <template v-slot:label>
-                    <div>To make this Wikibase the <b>home of a dataset</b> meant to be accessed and reused from here</div>
+                    <div>To <b>publish a dataset</b> meant to be accessed and reused from here</div>
                   </template>
                 </v-radio>
                 <v-radio value="data_staging">
                   <template v-slot:label>
-                    <div>To <b>prepare a dataset or data model</b> that will live in another Wikibase (for example, Wikidata)</div>
+                    <div>To <b>prepare a dataset or data model</b> meant for another Wikibase (for example, Wikidata)</div>
                   </template>
                 </v-radio>
                 <v-radio value="tool_lab">
@@ -280,13 +298,9 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.14/dist/vuetify.js"></script>
 <script>
-  new Vue({
-    el: '#app',
-    vuetify: new Vuetify({
-      theme: { themes: { light: { primary: '#1976d2' } } }
-    }),
-    data: {
-      // Nothing pre-selected in either pane.
+  // Nothing pre-selected in either pane. Also the state "Reset prototype" returns to.
+  function freshState() {
+    return {
       before: {
         purpose: null,
         otherPurpose: '',
@@ -302,8 +316,24 @@
         otherWikidataFirst: '',
         forWikidata: null,
       },
-    },
+    };
+  }
+
+  new Vue({
+    el: '#app',
+    vuetify: new Vuetify({
+      theme: { themes: { light: { primary: '#1976d2' } } }
+    }),
+    data: freshState(),
     methods: {
+      // Prototype scaffolding in the banner, not part of the product: clears both panes.
+      resetPrototype() {
+        Object.assign(this.$data, freshState());
+        this.$nextTick(() => {
+          this.$refs.beforeForm.resetValidation();
+          this.$refs.afterForm.resetValidation();
+        });
+      },
       required(v) {
         return !!v || 'Please select an option.';
       },
