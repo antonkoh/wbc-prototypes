@@ -40,7 +40,10 @@ Built to review behaviour and copy, not visual design.
   Classroom only to "after". It is scaffolding outside the product UI, drawn from the live layout,
   and hidden when the panes stack on narrow screens. Labels stack in the fixed order of the
   `MARKUP` list, which follows the option order of both panes at once, so no two lines cross. Keep
-  that list in order if options are added or moved.
+  that list in order if options are added or moved. Data Hub, Data Lab, Tool Lab and Test Drive sit
+  level with their options; Data Staging sits halfway between Data Lab and Tool Lab, Classroom
+  halfway between Tool Lab and Test Drive (Anton, 20261111). Markers: Data Lab (removed), Data
+  Staging (new), Classroom (new).
 - **"Reset prototype" sits in the banner**, as in `wiki-profile`: it clears both panes, answers and
   validation errors, and is scaffolding rather than product UI.
 - **< PREVIOUS does nothing, and NEXT only validates.** Steps 1 and 3 are not part of this

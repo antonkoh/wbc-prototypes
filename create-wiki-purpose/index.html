@@ -90,6 +90,7 @@
       white-space: nowrap;
       box-shadow: 0 1px 3px rgba(0,0,0,.2);
     }
+    .markup-note { font-weight: 400; opacity: 0.85; }
     .pane-label {
       font-family: 'Jost', sans-serif;
       color: #37474f;
@@ -331,7 +332,7 @@
           :key="l.label"
           class="markup-label"
           :style="{ left: l.x + 'px', top: l.y + 'px' }"
-        >{{ l.label }}</span>
+        >{{ l.label }}<span v-if="l.note" class="markup-note"> ({{ l.note }})</span></span>
       </div>
 
      </div>
@@ -367,12 +368,13 @@
   // Data Lab exists only before; Data Staging and Classroom only after.
   // Order matters: labels stack top to bottom in this order, which must follow the order of the
   // options in both panes at once. That is what keeps the lines from crossing.
+  // `between` places a label halfway between the two named labels instead of level with its option.
   const MARKUP = [
     { label: 'Data Hub', before: 'data_hub', after: 'data_hub' },
-    { label: 'Data Lab', before: 'data_lab' },
-    { label: 'Data Staging', after: 'data_staging' },
+    { label: 'Data Lab', note: 'removed', before: 'data_lab' },
+    { label: 'Data Staging', note: 'new', after: 'data_staging', between: ['Data Lab', 'Tool Lab'] },
     { label: 'Tool Lab', before: 'tool_lab', after: 'tool_lab' },
-    { label: 'Classroom', after: 'classroom' },
+    { label: 'Classroom', note: 'new', after: 'classroom', between: ['Tool Lab', 'Test Drive'] },
     { label: 'Test Drive', before: 'test_drive', after: 'test_drive' },
   ];
   const LABEL_HEIGHT = 22;
@@ -425,14 +427,28 @@
           const yb = optionY(this.$refs.beforePane, m.before);
           const ya = optionY(this.$refs.afterPane, m.after);
           const ys = [yb, ya].filter(v => v !== null);
-          return { label: m.label, yb, ya, y: ys.reduce((s, v) => s + v, 0) / ys.length };
+          return Object.assign({}, m, { yb, ya, y: ys.reduce((s, v) => s + v, 0) / ys.length });
         }).filter(it => !Number.isNaN(it.y));  // keep MARKUP order: sorting by height can cross lines
 
-        // Each label aims for the middle of its option(s), but never sits above the label before it.
-        let floor = -Infinity;
+        // Labels without `between` sit level with the middle of their option(s), in list order,
+        // never above the previous one, and leave room for any `between` label in the gap.
+        const step = LABEL_HEIGHT + LABEL_GAP;
+        let prev = -1;
+        items.forEach((it, i) => {
+          if (it.between) return;
+          if (prev >= 0) {
+            const slots = items.slice(prev + 1, i).filter(x => x.between).length;
+            it.y = Math.max(it.y, items[prev].y + (slots + 1) * step);
+          }
+          prev = i;
+        });
+        // Then each `between` label goes halfway between its two neighbours.
+        const byLabel = {};
+        items.forEach(it => { byLabel[it.label] = it; });
         items.forEach(it => {
-          it.y = Math.max(it.y, floor + LABEL_GAP + LABEL_HEIGHT / 2);
-          floor = it.y + LABEL_HEIGHT / 2;
+          if (!it.between) return;
+          const [a, b] = it.between.map(n => byLabel[n]);
+          if (a && b) it.y = (a.y + b.y) / 2;
         });
 
         const curve = (x1, y1, x2, y2) => {
@@ -449,7 +465,7 @@
         });
         this.markup = {
           svg: `<svg width="${base.width}" height="${base.height}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`,
-          labels: items.map(it => ({ label: it.label, x, y: it.y })),
+          labels: items.map(it => ({ label: it.label, note: it.note, x, y: it.y })),
         };
       },
       // Prototype scaffolding in the banner, not part of the product: clears both panes.
