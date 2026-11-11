@@ -204,6 +204,12 @@
     .purpose-field textarea { min-height: 224px; }
     .equity-field textarea { min-height: 164px; }
 
+    /* Locked while the committee reviews the submission (profileLocked). Answers stay readable -
+       Vuetify's disabled grey made them look like prompts - and the prompts are hidden, since
+       they ask for input the manager cannot give. Colour only on ::placeholder, see above. */
+    .profile-locked .theme--light.v-input--is-disabled textarea { color: rgba(0,0,0,0.6); }
+    .profile-locked .theme--light.v-input textarea::placeholder { color: transparent; }
+
     .reuse-option {
       border: 1px solid #e0e0e0;
       border-radius: 4px;
@@ -214,6 +220,7 @@
       cursor: pointer;
     }
     .reuse-option.selected { border-color: #1976d2; background: #f3f8fd; }
+    .reuse-option.locked { cursor: default; }
     .reuse-option .reuse-option-title {
       font-weight: 600;
       font-size: 14px;
@@ -248,6 +255,8 @@
     }
     .gate.ok   { background: #edf7ed; color: #2e5b30; }
     .gate.warn { background: #fdf3e3; color: #7a4f10; }
+    /* the profile's lock note while the committee reviews it - indigo, like the In review chip */
+    .gate.locked { background: #e8eaf6; color: #283593; }
 
     .check-item { margin-bottom: 6px; }
     .check-item .v-label {
@@ -288,6 +297,41 @@
       line-height: 1.55;
     }
     .empty-note { font-size: 13px; color: #757575; }
+
+    /* ---------- review committee control (demo scaffolding) ---------- */
+    /* A bar under both panes, in the banner's colour. Both panes are product UI here, so
+       unlike the MVP there is no free pane to hold it. */
+    .committee-bar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: #37474f;
+      color: #fff;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+    .committee-title {
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      white-space: nowrap;
+    }
+    .committee-lead {
+      flex: 1;
+      min-width: 0;
+      margin-left: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* keep toasts clear of the committee bar */
+    .v-snack:not(.v-snack--absolute) { padding-bottom: 46px; }
   </style>
 </head>
 <body>
@@ -341,7 +385,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card outlined class="profile-card">
+        <v-card outlined class="profile-card" :class="{ 'profile-locked': profileLocked }">
           <v-card-title>About this Wikibase</v-card-title>
           <v-card-subtitle>
             Describe your use case here. This is what the review committee reads when you submit
@@ -349,6 +393,14 @@
           </v-card-subtitle>
 
           <v-card-text>
+
+            <div class="gate locked" v-if="profileLocked">
+              <v-icon small color="indigo">mdi-lock-outline</v-icon>
+              <span>
+                The review committee is reviewing your submission. You can edit your wiki profile
+                again once they have made a decision.
+              </span>
+            </div>
 
             <!-- 1. intended for reuse -->
             <div class="q-block">
@@ -365,13 +417,13 @@
               </div>
               <div class="q-sub">Choose the option that best describes the data in this Wikibase.</div>
 
-              <v-radio-group v-model="reuseChoice" hide-details class="mt-0" dense>
+              <v-radio-group v-model="reuseChoice" :disabled="profileLocked" hide-details class="mt-0" dense>
                 <div
                   v-for="opt in reuseOptions"
                   :key="opt.value"
                   class="reuse-option"
-                  :class="{ selected: reuseChoice === opt.value }"
-                  @click="reuseChoice = opt.value"
+                  :class="{ selected: reuseChoice === opt.value, locked: profileLocked }"
+                  @click="pickReuse(opt.value)"
                 >
                   <v-radio :value="opt.value">
                     <template v-slot:label>
@@ -395,7 +447,7 @@
                 questions about the dataset, intended audience and contributors will follow).
               </div>
               <v-textarea v-model="purpose" outlined auto-grow rows="4" hide-details
-                class="purpose-field" :placeholder="purposePlaceholder"></v-textarea>
+                :disabled="profileLocked" class="purpose-field" :placeholder="purposePlaceholder"></v-textarea>
             </div>
 
             <v-divider class="my-5"></v-divider>
@@ -421,7 +473,7 @@
                 Cloud policies.
               </div>
               <v-textarea v-model="dataset" outlined auto-grow rows="4" hide-details
-                placeholder="Describe the dataset"></v-textarea>
+                :disabled="profileLocked" placeholder="Describe the dataset"></v-textarea>
             </div>
 
             <v-divider class="my-5"></v-divider>
@@ -442,7 +494,7 @@
                 and/or a URL.
               </div>
               <v-textarea v-model="audience" outlined auto-grow rows="4" hide-details
-                placeholder="Describe the intended audience and how they benefit"></v-textarea>
+                :disabled="profileLocked" placeholder="Describe the intended audience and how they benefit"></v-textarea>
             </div>
 
             <v-divider class="my-5"></v-divider>
@@ -466,7 +518,7 @@
                 this project.
               </div>
               <v-textarea v-model="contributors" outlined auto-grow rows="4" hide-details
-                placeholder="Describe who will contribute"></v-textarea>
+                :disabled="profileLocked" placeholder="Describe who will contribute"></v-textarea>
             </div>
 
             <v-divider class="my-5"></v-divider>
@@ -484,7 +536,7 @@
                 institutional - that have kept it underrepresented or excluded.
               </div>
               <v-textarea v-model="equity" outlined auto-grow rows="4" hide-details
-                class="equity-field" :placeholder="equityPlaceholder"></v-textarea>
+                :disabled="profileLocked" class="equity-field" :placeholder="equityPlaceholder"></v-textarea>
             </div>
 
             <v-divider class="my-5"></v-divider>
@@ -498,7 +550,7 @@
               </div>
 
               <div class="check-item">
-                <v-checkbox v-model="gdprConsent" :disabled="consentLocked" hide-details dense
+                <v-checkbox v-model="gdprConsent" :disabled="consentLocked || profileLocked" hide-details dense
                   class="mt-0">
                   <template v-slot:label>
                     <span>
@@ -523,12 +575,14 @@
           <v-divider></v-divider>
           <v-card-actions class="px-4 py-3">
             <span class="placeholder-text">
-              <template v-if="profileComplete && profileSaved">Saved. All required questions answered.</template>
+              <template v-if="profileLocked">Locked while the committee reviews your submission.</template>
+              <template v-else-if="profileComplete && profileSaved">Saved. All required questions answered.</template>
               <template v-else-if="profileComplete">Unsaved changes.</template>
               <template v-else>{{ answeredCount }} of {{ requiredCount }} required answers</template>
             </span>
             <v-spacer></v-spacer>
-            <v-btn color="primary" depressed small :disabled="!profileComplete || profileSaved"
+            <v-btn color="primary" depressed small
+              :disabled="!profileComplete || profileSaved || profileLocked"
               @click="saveProfile">Save</v-btn>
           </v-card-actions>
         </v-card>
@@ -670,6 +724,26 @@
 
   </div>
 
+  <!-- Demo scaffolding, not product UI: stands in for the committee's admin view, as in the
+       MVP variant, and follows its order - pick up first, then approve or reject. Cancel
+       works on any open submission. -->
+  <div class="committee-bar">
+    <span class="committee-title">Emulate the review committee</span>
+    <span class="committee-lead" v-if="openSubmission">Acts on the open submission.</span>
+    <span class="committee-lead" v-else>
+      No open submission. Submit the instance for review on the right to act on it here.
+    </span>
+    <v-btn small depressed dark color="indigo" :disabled="!awaitingPickUp" @click="pickUp">
+      <v-icon left small>mdi-play</v-icon> Pick up for review
+    </v-btn>
+    <v-btn small depressed dark color="green darken-1" :disabled="!inReview"
+      @click="decide('APPROVED')">Approve</v-btn>
+    <v-btn small depressed dark color="red darken-2" :disabled="!inReview"
+      @click="decide('REJECTED')">Reject</v-btn>
+    <v-btn small depressed dark color="grey" :disabled="!openSubmission"
+      @click="decide('CANCELLED')">Cancel</v-btn>
+  </div>
+
   <v-snackbar v-model="toast" timeout="4000">{{ toastMessage }}</v-snackbar>
 </v-app>
 </div>
@@ -787,6 +861,11 @@ new Vue({
     openSubmission() {
       return this.submissions.find(s => s.status === 'SUBMITTED' || s.status === 'IN_REVIEW');
     },
+    awaitingPickUp() { return !!this.openSubmission && this.openSubmission.status === 'SUBMITTED'; },
+    inReview() { return !!this.openSubmission && this.openSubmission.status === 'IN_REVIEW'; },
+    // The manager can edit the profile until the committee picks the submission up, and
+    // again once it is approved, rejected or cancelled.
+    profileLocked() { return this.inReview; },
     allChecked() {
       return this.checkLicense && this.checkDisclaimer && this.checkCommitment;
     },
@@ -820,10 +899,18 @@ new Vue({
                REJECTED: 'red darken-2', CANCELLED: 'grey' }[s];
     },
 
+    pickReuse(value) {
+      if (!this.profileLocked) this.reuseChoice = value;
+    },
+
     saveProfile() {
       this.profileSaved = true;
       if (this.gdprConsent) this.consentLocked = true;
-      this.toastMessage = 'Wiki profile saved. You can now submit this instance for review.';
+      // Saving is possible while a submission waits for pick-up; the committee reads the
+      // profile as it is when they pick it up.
+      this.toastMessage = this.openSubmission
+        ? 'Wiki profile saved. The review committee will read it when they pick up your submission.'
+        : 'Wiki profile saved. You can now submit this instance for review.';
       this.toast = true;
     },
     // Demo scaffolding: puts the whole prototype back to how it opens, including the
@@ -860,6 +947,16 @@ new Vue({
       s.closed = today();
       this.toastMessage = 'Submission cancelled. You can submit a new one.';
       this.toast = true;
+    },
+
+    // Demo scaffolding: the review committee bar under the panes.
+    pickUp() {
+      this.openSubmission.status = 'IN_REVIEW';
+    },
+    decide(status) {
+      const s = this.openSubmission;
+      s.status = status;
+      s.closed = today();
     },
   },
 });

@@ -91,6 +91,18 @@ now offers Save alone.
   writing, per the fine print underneath. An earlier version modelled withdrawal in the UI
   and was cut as overengineered.
 - The privacy warning sits directly above the consent checkbox, not elsewhere on the page.
+- The profile stays editable while a submission is `SUBMITTED`, until the committee picks it
+  up. Saving then says the committee will read the profile when they pick up the submission,
+  instead of inviting the manager to submit.
+- Once the submission is `IN_REVIEW` the profile is locked (`profileLocked`): every field and
+  the Save button are disabled, the answer cards ignore clicks, and an indigo lock note at the
+  top of the card (the colour of the "In review" chip) says the committee is reviewing the
+  submission and the profile can be edited again once they have made a decision. It unlocks
+  when the submission is approved, rejected or cancelled.
+- While locked, answers render at 60% black rather than Vuetify's disabled grey, which made
+  them look like placeholder prompts, and the placeholders are hidden - they ask for input the
+  manager cannot give. Both rules sit under `.profile-locked`; the placeholder one sets colour
+  only (see the `::placeholder` gotcha under Stack).
 
 **Right pane, submissions**
 
@@ -98,7 +110,16 @@ now offers Save alone.
 - The submit card is **hidden entirely** while a submission is open, because a manager
   cannot have two open submissions. It reappears once the open one is cancelled, approved
   or rejected.
-- A submission in `SUBMITTED` can be cancelled by the manager.
+- A submission in `SUBMITTED` can be cancelled by the manager. Once the committee picks it up
+  (`IN_REVIEW`), the Cancel button is gone - the manager can neither cancel it nor edit the
+  profile.
+- A **review committee control** sits in a dark bar under both panes, so the in-review lock
+  can be demoed. It is the MVP variant's control - same title, buttons, order and colours,
+  "Pick up for review" first, then "Approve" or "Reject", "Cancel" at any point while the
+  submission is open - moved into a bar because here both panes are product UI, and
+  scaffolding stays out of product chrome. Toasts are lifted above the bar so they do not
+  cover its buttons. An emulated rejection carries no reason; the seeded one shows how reasons
+  look.
 - Two submissions are seeded so the list is not empty: a `REJECTED` one dated 2026-06-03
   with the reason "CC BY-NC is not a compliant license, since it does not allow commercial
   use", and a `CANCELLED` one dated 2026-05-12.
