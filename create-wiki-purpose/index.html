@@ -369,8 +369,9 @@
   // Order matters: labels stack top to bottom in this order, which must follow the order of the
   // options in both panes at once. That is what keeps the lines from crossing.
   // `between` places a label halfway between the two named labels instead of level with its option.
+  // `above` lifts a label to the typical spacing above the named label (Anton, 20261111).
   const MARKUP = [
-    { label: 'Data Hub', before: 'data_hub', after: 'data_hub' },
+    { label: 'Data Hub', before: 'data_hub', after: 'data_hub', above: 'Data Lab' },
     { label: 'Data Lab', note: 'removed', before: 'data_lab' },
     { label: 'Data Staging', note: 'new', after: 'data_staging', between: ['Data Lab', 'Tool Lab'] },
     { label: 'Tool Lab', before: 'tool_lab', after: 'tool_lab' },
@@ -449,6 +450,16 @@
           if (!it.between) return;
           const [a, b] = it.between.map(n => byLabel[n]);
           if (a && b) it.y = (a.y + b.y) / 2;
+        });
+        // Finally each `above` label moves to one typical gap above its named label, the typical
+        // gap being the mean spacing of the labels from that one down.
+        items.forEach(it => {
+          const ref = it.above && byLabel[it.above];
+          if (!ref) return;
+          const below = items.slice(items.indexOf(ref));
+          const gaps = below.slice(1).map((x, k) => x.y - below[k].y);
+          const typical = gaps.length ? gaps.reduce((s, g) => s + g, 0) / gaps.length : step;
+          it.y = ref.y - Math.max(typical, step);
         });
 
         const curve = (x1, y1, x2, y2) => {
