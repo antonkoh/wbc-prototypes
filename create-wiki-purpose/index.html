@@ -229,7 +229,7 @@
                 </v-radio>
                 <v-radio value="data_staging">
                   <template v-slot:label>
-                    <div>To <b>prepare a dataset or data model</b> meant for another Wikibase (for example, Wikidata)</div>
+                    <div>To <b>prepare a dataset or data model</b> meant for another knowledge graph</div>
                   </template>
                 </v-radio>
                 <v-radio value="tool_lab">
@@ -310,7 +310,18 @@
                   <v-radio value="wikidata" label="Wikidata"></v-radio>
                   <v-radio value="cloud" label="Another Wikibase on Wikibase Cloud"></v-radio>
                   <v-radio value="self_hosted" label="A self-hosted Wikibase"></v-radio>
-                  <v-radio value="other" label="Other"></v-radio>
+                  <v-radio value="other">
+                    <template v-slot:label>
+                      Other:
+                      <v-text-field
+                        v-model="after.otherStagingTarget"
+                        counter="200"
+                        dense
+                        class="pl-1 mt-n1 mb-n2"
+                        :rules="otherTextRules(() => after.stagingTarget === 'other')"
+                      ></v-text-field>
+                    </template>
+                  </v-radio>
                   <v-radio value="not_sure" label="Not sure yet"></v-radio>
                 </v-radio-group>
               </div>
@@ -362,6 +373,7 @@
         wikidataFirst: null,
         otherWikidataFirst: '',
         stagingTarget: null,
+        otherStagingTarget: '',
       },
     };
   }
@@ -519,6 +531,7 @@
         if (s.purpose !== 'other') s.otherPurpose = '';
         if (s.audience !== 'other') s.otherAudience = '';
         if (s.wikidataFirst !== 'other') s.otherWikidataFirst = '';
+        if (s.stagingTarget !== 'other') s.otherStagingTarget = '';
         this.$refs.afterForm.validate();
       },
     },

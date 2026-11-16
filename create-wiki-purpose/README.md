@@ -23,8 +23,9 @@ Built to review behaviour and copy, not visual design.
 - **"After" copy comes from the PRD.** Option wording and bold phrases from R1, the follow-ups from
   R2 and R3. The audience question is unchanged from the live dialog.
 - **The Data Staging follow-up asks for the target** (R3 as of 20261116): Wikidata, another Wikibase
-  on Wikibase Cloud, a self-hosted Wikibase, Other, Not sure yet. Its "Other" has no text field,
-  as the PRD writes it, unlike the "Other: ___" options in R1 and R2.
+  on Wikibase Cloud, a self-hosted Wikibase, Other, Not sure yet. Its "Other" has a text field like
+  the other "Other" options (Anton, 20261116). The Data Staging option itself reads "meant for
+  another knowledge graph" to match (Anton, 20261116).
 - **The "why we ask" line under the title deviates from the PRD's example on purpose.** Anton chose
   "We ask to better understand why people create Wikibases. Your answers don't change how your
   Wikibase works." (20261110); R4 gives "We ask to understand what people create Wikibases for" only
