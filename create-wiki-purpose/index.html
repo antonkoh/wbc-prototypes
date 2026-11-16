@@ -305,10 +305,12 @@
 
               <!-- Data Staging follow-up -->
               <div v-if="after.purpose === 'data_staging'" class="pt-3">
-                <h3>Are you preparing this data or data model for Wikidata?</h3>
-                <v-radio-group v-model="after.forWikidata" :rules="[required]">
-                  <v-radio value="yes" label="Yes, all or part of it"></v-radio>
-                  <v-radio value="no" label="No"></v-radio>
+                <h3>What is the target knowledge graph that you are preparing this data or data model for?</h3>
+                <v-radio-group v-model="after.stagingTarget" :rules="[required]">
+                  <v-radio value="wikidata" label="Wikidata"></v-radio>
+                  <v-radio value="cloud" label="Another Wikibase on Wikibase Cloud"></v-radio>
+                  <v-radio value="self_hosted" label="A self-hosted Wikibase"></v-radio>
+                  <v-radio value="other" label="Other"></v-radio>
                   <v-radio value="not_sure" label="Not sure yet"></v-radio>
                 </v-radio-group>
               </div>
@@ -359,7 +361,7 @@
         otherAudience: '',
         wikidataFirst: null,
         otherWikidataFirst: '',
-        forWikidata: null,
+        stagingTarget: null,
       },
     };
   }
@@ -513,7 +515,7 @@
           s.audience = null;
           s.wikidataFirst = null;
         }
-        if (s.purpose !== 'data_staging') s.forWikidata = null;
+        if (s.purpose !== 'data_staging') s.stagingTarget = null;
         if (s.purpose !== 'other') s.otherPurpose = '';
         if (s.audience !== 'other') s.otherAudience = '';
         if (s.wikidataFirst !== 'other') s.otherWikidataFirst = '';
